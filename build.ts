@@ -3,10 +3,10 @@ import * as path from "https://deno.land/std@0.148.0/path/mod.ts";
 import { ensureFile } from "https://deno.land/std@0.54.0/fs/ensure_file.ts";
 
 // TODO:
-// - format dates
-// - style tags
+// - tag sub page
 // - minimal SEO tags
-// - convert images to webp
+// - convert images to webp via command
+// - deploy to production branch
 
 // NOTE: To build entire site run:
 // deno run --allow-read --allow-write build.ts

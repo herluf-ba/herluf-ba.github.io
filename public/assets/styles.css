@@ -1,0 +1,205 @@
+:root {
+  --color-text: #252525;
+  --color-text-fade: #cecece;
+
+  --color-bg: #ffffff;
+  --color-bg-emph: #f3f3f4;
+  --color-primary: #19788f;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inconsolata", monospace;
+  color: var(--color-text);
+}
+
+main {
+  padding: 0 32px;
+  max-width: 800px;
+  margin: 32px auto 0 auto;
+  min-height: 100vh;
+  background-color: var(--color-bg);
+}
+
+p {
+  font-family: Inconsolata, monospace;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+  line-height: 1.6em;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+a:visited {
+  color: var(--color-primary);
+}
+
+p,
+img,
+pre,
+blockquote {
+  margin-bottom: 32px;
+}
+
+pre,
+blockquote,
+img {
+  border-radius: 8px;
+}
+
+blockquote {
+  background-color: var(--color-bg-emph);
+  padding: 1rem;
+}
+
+blockquote > p {
+  margin: 0;
+}
+
+img {
+  display: block;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 600px;
+}
+
+h1 {
+  font-family: "Inter", sans-serif;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-bottom: 1rem;
+  font-family: "Inter", sans-serif;
+}
+
+h2::before,
+h3::before,
+h4::before,
+h5::before,
+h6::before {
+  content: "# ";
+  color: var(--color-text-fade);
+}
+
+header {
+  position: sticky;
+  left: 0;
+  top: 0;
+  background-color: var(--color-bg);
+  padding: 8px 32px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header > a {
+  color: var(--color-text);
+  font-size: 32px;
+  text-decoration: none;
+}
+
+header > a:visited {
+  color: var(--color-text);
+  font-size: 32px;
+  text-decoration: none;
+}
+
+footer {
+  margin-top: 64px;
+  border-top: 2px var(--color-text-fade) dashed;
+  padding-top: 16px;
+
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#intro {
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#intro > p {
+  margin: 0;
+}
+
+#intro > img {
+  display: block;
+  width: 128px;
+  height: 128px;
+  margin: 0;
+  border-radius: 1000px;
+}
+
+.card {
+  color: var(--color-text);
+  text-decoration: none;
+  margin-bottom: 32px;
+}
+
+.card h2 {
+  font-family: "Inter", sans-serif;
+  color: var(--color-text);
+  width: 100%;
+  margin: 0;
+  padding: 4px 0 8px 0;
+}
+
+.card a:hover h2::before {
+  color: var(--color-primary);
+}
+
+.card a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.card a:visited {
+  color: var(--color-text);
+}
+
+.tag {
+  display: inline-block;
+  padding: 4px 8px;
+  background-color: var(--color-bg-emph);
+  color: var(--color-text);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.tag:visited {
+  color: var(--color-text);
+}
+
+.tag:hover {
+  background-color: var(--color-text-fade);
+}
+
+@media screen and (max-width: 600px) {
+  main {
+    padding: 0 16px;
+  }
+
+  header {
+    padding: 8px 16px;
+  }
+
+  #intro {
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+}

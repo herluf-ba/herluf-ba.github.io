@@ -3,20 +3,19 @@ import * as path from "https://deno.land/std@0.148.0/path/mod.ts";
 import { ensureFile } from "https://deno.land/std@0.54.0/fs/ensure_file.ts";
 
 // TODO:
-// - convert images to webp via command
-// - deploy to production branch
+// - deploy
 // - write blogpost
 
 // NOTE: To build entire site run:
 // deno run --allow-read --allow-write build.ts
 // To compress images run:
-// for file in public/images/*; do bin/cwebp "$file" -o "${file%.*}.webp"; done
+// for file in ${OUT_DIR}/images/*; do bin/cwebp "$file" -o "${file%.*}.webp"; done
 
 // SETTINGS
 const SITE_ROOT = "herluf-ba.github.io";
 const TEMPLATE_DIR = "templates";
 const CONTENT_DIR = "content";
-const OUT_DIR = "public";
+const OUT_DIR = "docs";
 
 type Parsed = {
   href: string;
@@ -160,12 +159,12 @@ for await (const tag of tags) {
   );
 
   await write(
-    `public/tag/${tag}.html`,
+    `${OUT_DIR}/tag/${tag}.html`,
     render(TEMPLATES["tag"], {
       href: `/tag/${tag}`,
       path: {
         public: "..",
-        destination: `public/tags/${tag}.html`,
+        destination: `${OUT_DIR}/tags/${tag}.html`,
       },
       content: `
     <nav>
@@ -182,12 +181,12 @@ for await (const tag of tags) {
 
 // Render and save a frontpage
 await write(
-  "public/index.html",
+  `${OUT_DIR}/index.html`,
   render(TEMPLATES["index"], {
     href: "/",
     path: {
       public: ".",
-      destination: "public/index.html",
+      destination: "${OUT_DIR}/index.html",
     },
     content: `
   <nav>

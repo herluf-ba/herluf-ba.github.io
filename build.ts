@@ -3,9 +3,6 @@ import * as path from "https://deno.land/std@0.148.0/path/mod.ts";
 import { ensureFile } from "https://deno.land/std@0.54.0/fs/ensure_file.ts";
 
 // TODO:
-// - Favicon
-// - robots file
-// - minimal SEO tags
 // - convert images to webp via command
 // - deploy to production branch
 // - write blogpost
@@ -14,16 +11,18 @@ import { ensureFile } from "https://deno.land/std@0.54.0/fs/ensure_file.ts";
 // deno run --allow-read --allow-write build.ts
 
 // SETTINGS
+const SITE_ROOT = "herluf-ba.github.io";
 const TEMPLATE_DIR = "templates";
 const CONTENT_DIR = "content";
 const OUT_DIR = "public";
 
 type Parsed = {
-  source: string;
-  destination: string;
   href: string;
-  public_path: string;
   content: string;
+  path: {
+    destination: string;
+    public: string;
+  };
   meta: {
     title: string;
     image?: string;
@@ -63,8 +62,7 @@ const getNestedMdFiles = async (
 };
 
 const parse = async (source: string): Promise<Parsed> => {
-  const text = decoder.decode(await Deno.readFile(source));
-  const parsed = Marked.parse(text);
+  const parsed = Marked.parse(decoder.decode(await Deno.readFile(source)));
   const source_path = path.parse(source);
   const destination = path.join(
     source_path.dir.replace(CONTENT_DIR, OUT_DIR),
@@ -75,15 +73,16 @@ const parse = async (source: string): Promise<Parsed> => {
     source_path.name + ".html"
   );
 
-  const public_path = path.join(
+  const _public = path.join(
     ...Array((destination.match(/\//g)?.length ?? 0) - 1).fill("..")
   );
 
   return {
-    public_path,
-    destination,
-    source,
     href,
+    path: {
+      public: _public,
+      destination,
+    },
     ...parsed,
   } as Parsed;
 };
@@ -105,12 +104,33 @@ const render_post_card = (parsed: Parsed) => `
   ${render_tags(parsed.meta.tags)}
 </section>`;
 
+const render_meta = (parsed: Parsed) => `
+<title>${parsed.meta.title}</title>
+<meta name="title" content="${parsed.meta.title}">
+<meta name="description" content="${parsed.meta.summary}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="${SITE_ROOT}/${parsed.href}">
+<meta property="og:title" content="${parsed.meta.title}">
+<meta property="og:description" content="${parsed.meta.summary}">
+<meta property="og:image" content="${
+  parsed.meta.image ?? "/images/herluf.jpg"
+}">
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="${SITE_ROOT}/${parsed.href}">
+<meta property="twitter:title" content="${parsed.meta.title}">
+<meta property="twitter:description" content="${parsed.meta.summary}">
+<meta property="twitter:image" content="${
+  parsed.meta.image ?? "/images/herluf.jpg"
+}">
+`;
+
 const render = (template: string, parsed: Parsed) =>
   template
+    .replaceAll("{{META}}", render_meta(parsed))
     .replaceAll("{{TITLE}}", parsed.meta.title)
     .replaceAll("{{CONTENT}}", parsed.content)
     .replaceAll("{{TAGS}}", render_tags(parsed.meta.tags))
-    .replaceAll("{{PUBLIC}}", parsed.public_path);
+    .replaceAll("{{PUBLIC}}", parsed.path.public);
 
 const write = async (destination: string, html: string) => {
   await ensureFile(destination);
@@ -125,7 +145,7 @@ const parsed_files = await Promise.all(markdown_files.map(parse));
 
 // Render and save all posts
 for await (const parsed of parsed_files) {
-  await write(parsed.destination, render(TEMPLATES["post"], parsed));
+  await write(parsed.path.destination, render(TEMPLATES["post"], parsed));
 }
 
 // Render and save a page for each tag with only posts that contain that tag
@@ -138,10 +158,11 @@ for await (const tag of tags) {
   await write(
     `public/tag/${tag}.html`,
     render(TEMPLATES["tag"], {
-      source: ".",
-      public_path: "..",
       href: `/tag/${tag}`,
-      destination: `public/tags/${tag}.html`,
+      path: {
+        public: "..",
+        destination: `public/tags/${tag}.html`,
+      },
       content: `
     <nav>
       ${posts_with_tag.map(render_post_card).join("\n")}
@@ -158,10 +179,11 @@ for await (const tag of tags) {
 await write(
   "public/index.html",
   render(TEMPLATES["index"], {
-    source: ".",
-    public_path: ".",
     href: "/",
-    destination: "public/index.html",
+    path: {
+      public: ".",
+      destination: "public/index.html",
+    },
     content: `
   <nav>
     ${parsed_files.map(render_post_card).join("\n")}

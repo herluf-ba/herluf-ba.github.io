@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inconsolata&family=Inter&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <link rel="stylesheet" href="./assets/prism.css" />
+
+    
+<title>Writing a static site generator in a single file</title>
+<meta name="title" content="Writing a static site generator in a single file">
+<meta name="description" content="Writing a minimal static site generator using deno, typescript and markdown files">
+<meta property="og:type" content="website">
+<meta property="og:url" content="herluf-ba.github.io/writing-a-static-site-generator-in-a-single-file.html">
+<meta property="og:title" content="Writing a static site generator in a single file">
+<meta property="og:description" content="Writing a minimal static site generator using deno, typescript and markdown files">
+<meta property="og:image" content="/images/herluf.webp">
+<meta property="twitter:card" content="description_large_image">
+<meta property="twitter:url" content="herluf-ba.github.io/writing-a-static-site-generator-in-a-single-file.html">
+<meta property="twitter:title" content="Writing a static site generator in a single file">
+<meta property="twitter:description" content="Writing a minimal static site generator using deno, typescript and markdown files">
+<meta property="twitter:image" content="/images/herluf.webp">
+
+  </head>
+  <body>
+    <header>
+      <a href="/"> {HB} </a>
+      <a aria-label="Github" href="https://github.com/herluf-ba">
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M15.9985 0.842105C7.16437 0.842105 0 7.99353 0 16.8158C0 23.8721 4.58406 29.8595 10.942 31.9727C11.7425 32.1188 12.0343 31.6256 12.0343 31.202C12.0343 30.8225 12.0205 29.8183 12.0126 28.4857C7.56218 29.4506 6.62317 26.3441 6.62317 26.3441C5.89534 24.4987 4.84632 24.0074 4.84632 24.0074C3.39361 23.017 4.95633 23.0366 4.95633 23.0366C6.56227 23.1494 7.40698 24.683 7.40698 24.683C8.83416 27.1237 11.1522 26.4187 12.0637 26.0097C12.2091 24.9782 12.6226 24.2741 13.0793 23.875C9.52663 23.471 5.79122 22.1012 5.79122 15.9804C5.79122 14.2359 6.41494 12.8111 7.43842 11.6943C7.27341 11.2903 6.72434 9.66637 7.59557 7.46693C7.59557 7.46693 8.93827 7.03742 11.995 9.10351C13.2709 8.74952 14.6401 8.57302 16.0005 8.56615C17.3599 8.57302 18.7281 8.74952 20.006 9.10351C23.0607 7.03742 24.4015 7.46693 24.4015 7.46693C25.2747 9.66637 24.7256 11.2903 24.5616 11.6943C25.587 12.8111 26.2058 14.2359 26.2058 15.9804C26.2058 22.1169 22.4645 23.4671 18.901 23.8623C19.4746 24.3555 19.9864 25.3302 19.9864 26.8207C19.9864 28.9554 19.9667 30.6783 19.9667 31.202C19.9667 31.6295 20.2555 32.1266 21.0668 31.9707C27.4199 29.8536 32 23.8711 32 16.8158C32 7.99353 24.8356 0.842105 15.9985 0.842105"
+            fill="#1B1817"
+          />
+        </svg>
+      </a>
+    </header>
+
+    <main>
+      <h1>Writing a static site generator in a single file</h1>
+      <p>I have made a static site generator. It&#39;s very minimal, but it meets all my needs and I&#39;m pretty happy with how it turned out. </p>
+<p>Here&#39;s my static site generator in its entirety:</p>
+
+<pre><code class="lang-typescript">import { Marked } from &quot;https://deno.land/x/markdown@v2.0.0/mod.ts&quot;;
+import * as path from &quot;https://deno.land/std@0.148.0/path/mod.ts&quot;;
+import { ensureFile } from &quot;https://deno.land/std@0.54.0/fs/ensure_file.ts&quot;;
+
+// NOTE: To build entire site run:
+// deno run --allow-read --allow-write build.ts
+// To compress images run:
+// for file in ${OUT_DIR}/images/*; do bin/cwebp &quot;$file&quot; -o &quot;${file%.*}.webp&quot;; done
+
+///////// SETTINGS /////////
+const SITE_ROOT = &quot;herluf-ba.github.io&quot;;
+const TEMPLATE_DIR = &quot;templates&quot;;
+const CONTENT_DIR = &quot;content&quot;;
+const OUT_DIR = &quot;docs&quot;;
+
+type Page = {
+  href: string;
+  content: string;
+  path: {
+    destination: string;
+    public: string;
+  };
+  meta: {
+    title: string;
+    image?: string;
+    description: string;
+    publishedAt?: string;
+    tags: ReadonlyArray&lt;string&gt;;
+  };
+};
+
+///////// GLOBALS /////////
+const decoder = new TextDecoder(&quot;utf-8&quot;);
+const encoder = new TextEncoder();
+const TEMPLATES = {
+  index: decoder.decode(
+    await Deno.readFile(path.join(TEMPLATE_DIR, &quot;index.html&quot;))
+  ),
+  post: decoder.decode(
+    await Deno.readFile(path.join(TEMPLATE_DIR, &quot;post.html&quot;))
+  ),
+  tag: decoder.decode(await Deno.readFile(path.join(TEMPLATE_DIR, &quot;tag.html&quot;))),
+};
+
+///////// FILE IO /////////
+const getNestedMdFiles = async (
+  dir: string
+): Promise&lt;ReadonlyArray&lt;string&gt;&gt; =&gt; {
+  const files = [];
+  for await (const entry of Deno.readDir(dir)) {
+    if (entry.isFile &amp;&amp; entry.name.endsWith(&quot;.md&quot;)) {
+      files.push(path.join(dir, entry.name));
+    }
+    if (entry.isDirectory) {
+      files.push(...(await getNestedMdFiles(path.join(dir, entry.name))));
+    }
+  }
+
+  return files;
+};
+
+const parse = async (source: string): Promise&lt;Page&gt; =&gt; {
+  const parsed = Marked.parse(decoder.decode(await Deno.readFile(source)));
+  const source_path = path.parse(source);
+  const destination = path.join(
+    source_path.dir.replace(CONTENT_DIR, OUT_DIR),
+    source_path.name + &quot;.html&quot;
+  );
+  const href =
+    &quot;/&quot; +
+    path.join(
+      source_path.dir.replace(CONTENT_DIR, &quot;&quot;),
+      source_path.name + &quot;.html&quot;
+    );
+
+  const nesting_level = (destination.match(/\//g)?.length ?? 0) - 1;
+  const public_path = path.join(...Array(nesting_level).fill(&quot;..&quot;));
+
+  return {
+    href,
+    path: {
+      public: public_path,
+      destination,
+    },
+    ...parsed,
+  } as Page;
+};
+
+const write = async (destination: string, html: string) =&gt; {
+  await ensureFile(destination);
+  await Deno.writeFile(destination, encoder.encode(html), {
+    create: true,
+  });
+};
+
+///////// RENDERING /////////
+const render_tags = (tags: ReadonlyArray&lt;string&gt;) =&gt;
+  tags
+    .map((tag) =&gt; `&lt;a class=&quot;tag&quot; href=&quot;/tag/${tag}.html&quot;&gt;${tag}&lt;/a&gt;`)
+    .join(&quot;\n&quot;);
+
+const render_date = (date?: string) =&gt;
+  date === undefined
+    ? &quot;&quot;
+    : `&lt;span class=&quot;date&quot;&gt;${new Date(date).toLocaleDateString(&quot;en-US&quot;)}&lt;/span&gt;`;
+
+const render_post_card = (parsed: Page) =&gt; `
+&lt;section class=&quot;card&quot;&gt;
+  ${render_date(parsed.meta.publishedAt)}
+  &lt;a href=&quot;${parsed.href}&quot;&gt;&lt;h2&gt;${parsed.meta.title}&lt;/h2&gt;&lt;/a&gt;
+  ${render_tags(parsed.meta.tags)}
+&lt;/section&gt;`;
+
+const render_meta = (parsed: Page) =&gt; `
+&lt;title&gt;${parsed.meta.title}&lt;/title&gt;
+&lt;meta name=&quot;title&quot; content=&quot;${parsed.meta.title}&quot;&gt;
+&lt;meta name=&quot;description&quot; content=&quot;${parsed.meta.description}&quot;&gt;
+&lt;meta property=&quot;og:type&quot; content=&quot;website&quot;&gt;
+&lt;meta property=&quot;og:url&quot; content=&quot;${SITE_ROOT}${parsed.href ?? &quot;&quot;}&quot;&gt;
+&lt;meta property=&quot;og:title&quot; content=&quot;${parsed.meta.title}&quot;&gt;
+&lt;meta property=&quot;og:description&quot; content=&quot;${parsed.meta.description}&quot;&gt;
+&lt;meta property=&quot;og:image&quot; content=&quot;${
+  parsed.meta.image ?? &quot;/images/herluf.webp&quot;
+}&quot;&gt;
+&lt;meta property=&quot;twitter:card&quot; content=&quot;description_large_image&quot;&gt;
+&lt;meta property=&quot;twitter:url&quot; content=&quot;${SITE_ROOT}${parsed.href ?? &quot;&quot;}&quot;&gt;
+&lt;meta property=&quot;twitter:title&quot; content=&quot;${parsed.meta.title}&quot;&gt;
+&lt;meta property=&quot;twitter:description&quot; content=&quot;${parsed.meta.description}&quot;&gt;
+&lt;meta property=&quot;twitter:image&quot; content=&quot;${
+  parsed.meta.image ?? &quot;/images/herluf.webp&quot;
+}&quot;&gt;
+`;
+
+const render = (template: string, parsed: Page) =&gt;
+  template
+    .replaceAll(&quot;{{META}}&quot;, render_meta(parsed))
+    .replaceAll(&quot;{{TITLE}}&quot;, parsed.meta.title)
+    .replaceAll(&quot;{{CONTENT}}&quot;, parsed.content)
+    .replaceAll(&quot;<a class="tag" href="/tag/deno.html">deno</a>
+<a class="tag" href="/tag/webdev.html">webdev</a>
+<a class="tag" href="/tag/typescript.html">typescript</a>&quot;, render_tags(parsed.meta.tags))
+    .replaceAll(&quot;.&quot;, parsed.path.public);
+
+///////// SITE GENERATION /////////
+// Read and parse all posts in content folder
+const markdown_files = await getNestedMdFiles(CONTENT_DIR);
+const parsed_files = await Promise.all(markdown_files.map(parse));
+
+// Render and save all posts
+for await (const parsed of parsed_files) {
+  await write(parsed.path.destination, render(TEMPLATES[&quot;post&quot;], parsed));
+}
+
+// Render and save a page for each tag with only posts that contain that tag
+const tags = Array.from(new Set(parsed_files.flatMap(({ meta }) =&gt; meta.tags)));
+for await (const tag of tags) {
+  const posts_with_tag = parsed_files.filter(({ meta }) =&gt;
+    meta.tags.includes(tag)
+  );
+
+  const tag_page = render(TEMPLATES[&quot;tag&quot;], {
+    href: `/tag/${tag}`,
+    path: {
+      public: &quot;..&quot;,
+      destination: `${OUT_DIR}/tags/${tag}.html`,
+    },
+    content: `
+  &lt;nav&gt;
+    ${posts_with_tag.map(render_post_card).join(&quot;\n&quot;)}
+  &lt;/nav&gt;`,
+    meta: {
+      title: `Posts about ${tag}`,
+      description: `Everything I have writting abount ${tag}`,
+      tags: [tag],
+    },
+  });
+
+  await write(`${OUT_DIR}/tag/${tag}.html`, tag_page);
+}
+
+// Render and save a frontpage
+const front_page = render(TEMPLATES[&quot;index&quot;], {
+  href: &quot;/&quot;,
+  path: {
+    public: &quot;.&quot;,
+    destination: &quot;${OUT_DIR}/index.html&quot;,
+  },
+  content: `
+&lt;nav&gt;
+  ${parsed_files.map(render_post_card).join(&quot;\n&quot;)}
+&lt;/nav&gt;`,
+  meta: {
+    title: &quot;Herluf B.&quot;,
+    description:
+      &quot;👋 Hi there! I&#39;m Herluf. I work as a web dev and write games for a hobby. Sometimes I write stuff and you can read that stuff right here&quot;,
+    publishedAt: new Date().toISOString(),
+    tags: [],
+  },
+});
+await write(`${OUT_DIR}/index.html`, front_page);
+</code></pre>
+
+    </main>
+
+    <script src="./assets/prism.js"></script>
+  </body>
+</html>

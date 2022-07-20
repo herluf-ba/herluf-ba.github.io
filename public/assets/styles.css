@@ -69,9 +69,10 @@ img {
 }
 
 h1 {
+  max-width: 500px;
   font-family: "Inter", sans-serif;
   text-align: center;
-  margin: 1rem 0;
+  margin: 1rem auto;
 }
 
 h2,
@@ -171,20 +172,21 @@ footer {
   color: var(--color-text);
 }
 
-.tag {
+a.tag {
   display: inline-block;
   padding: 4px 8px;
   background-color: var(--color-bg-emph);
   color: var(--color-text);
   border-radius: 4px;
   margin-bottom: 8px;
+  text-decoration: none;
 }
 
-.tag:visited {
+a.tag:visited {
   color: var(--color-text);
 }
 
-.tag:hover {
+a.tag:hover {
   background-color: var(--color-text-fade);
 }
 

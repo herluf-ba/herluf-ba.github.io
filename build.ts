@@ -3,10 +3,12 @@ import * as path from "https://deno.land/std@0.148.0/path/mod.ts";
 import { ensureFile } from "https://deno.land/std@0.54.0/fs/ensure_file.ts";
 
 // TODO:
-// - tag sub page
+// - Favicon
+// - robots file
 // - minimal SEO tags
 // - convert images to webp via command
 // - deploy to production branch
+// - write blogpost
 
 // NOTE: To build entire site run:
 // deno run --allow-read --allow-write build.ts
@@ -24,8 +26,9 @@ type Parsed = {
   content: string;
   meta: {
     title: string;
-    summary: string;
-    publishedAt: string;
+    image?: string;
+    summary?: string;
+    publishedAt?: string;
     tags: ReadonlyArray<string>;
   };
 };
@@ -40,6 +43,7 @@ const TEMPLATES = {
   post: decoder.decode(
     await Deno.readFile(path.join(TEMPLATE_DIR, "post.html"))
   ),
+  tag: decoder.decode(await Deno.readFile(path.join(TEMPLATE_DIR, "tag.html"))),
 };
 
 const getNestedMdFiles = async (
@@ -85,10 +89,21 @@ const parse = async (source: string): Promise<Parsed> => {
 };
 
 const render_tags = (tags: ReadonlyArray<string>) =>
-  tags.map((tag) => `<a class="tag" href="/tag/${tag}">${tag}</a>`).join("\n");
+  tags
+    .map((tag) => `<a class="tag" href="/tag/${tag}.html">${tag}</a>`)
+    .join("\n");
 
-const render_date = (date: string) =>
-  `<span class="date">${new Date(date).toLocaleDateString("en-US")}</span>`;
+const render_date = (date?: string) =>
+  date === undefined
+    ? ""
+    : `<span class="date">${new Date(date).toLocaleDateString("en-US")}</span>`;
+
+const render_post_card = (parsed: Parsed) => `
+<section class="card">
+  ${render_date(parsed.meta.publishedAt)}
+  <a href="/${parsed.href}"><h2>${parsed.meta.title}</h2></a>
+  ${render_tags(parsed.meta.tags)}
+</section>`;
 
 const render = (template: string, parsed: Parsed) =>
   template
@@ -110,38 +125,52 @@ const parsed_files = await Promise.all(markdown_files.map(parse));
 
 // Render and save all posts
 for await (const parsed of parsed_files) {
-  const html = render(TEMPLATES["post"], parsed);
-  await write(parsed.destination, html);
+  await write(parsed.destination, render(TEMPLATES["post"], parsed));
 }
 
-// Generate links for each post
-const frontpage_content = `
-<nav>
-${parsed_files
-  .map(
-    (parsed) => `
-    <section class="card">
-      ${render_date(parsed.meta.publishedAt)}
-      <a href="${parsed.href}"><h2>${parsed.meta.title}</h2></a>
-      ${render_tags(parsed.meta.tags)}
-    </section>`
-  )
-  .join("\n")}
-</nav>
-`;
+// Render and save a page for each tag with only posts that contain that tag
+const tags = Array.from(new Set(parsed_files.flatMap(({ meta }) => meta.tags)));
+for await (const tag of tags) {
+  const posts_with_tag = parsed_files.filter(({ meta }) =>
+    meta.tags.includes(tag)
+  );
 
-const frontpage: Parsed = {
-  source: ".",
-  public_path: ".",
-  href: "/",
-  destination: "public/index.html",
-  content: frontpage_content,
-  meta: {
-    title: "Herluf B",
-    summary: "A blog about game development as a hobbyist",
-    publishedAt: new Date().toISOString(),
-    tags: [],
-  },
-};
+  await write(
+    `public/tag/${tag}.html`,
+    render(TEMPLATES["tag"], {
+      source: ".",
+      public_path: "..",
+      href: `/tag/${tag}`,
+      destination: `public/tags/${tag}.html`,
+      content: `
+    <nav>
+      ${posts_with_tag.map(render_post_card).join("\n")}
+    </nav>`,
+      meta: {
+        title: `Posts about ${tag}`,
+        tags: [tag],
+      },
+    })
+  );
+}
 
-await write(frontpage.destination, render(TEMPLATES["index"], frontpage));
+// Render and save a frontpage
+await write(
+  "public/index.html",
+  render(TEMPLATES["index"], {
+    source: ".",
+    public_path: ".",
+    href: "/",
+    destination: "public/index.html",
+    content: `
+  <nav>
+    ${parsed_files.map(render_post_card).join("\n")}
+  </nav>`,
+    meta: {
+      title: "Herluf B",
+      summary: "A blog about game development as a hobbyist",
+      publishedAt: new Date().toISOString(),
+      tags: [],
+    },
+  })
+);

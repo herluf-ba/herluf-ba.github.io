@@ -9,6 +9,8 @@ import { ensureFile } from "https://deno.land/std@0.54.0/fs/ensure_file.ts";
 
 // NOTE: To build entire site run:
 // deno run --allow-read --allow-write build.ts
+// To compress images run:
+// for file in public/images/*; do bin/cwebp "$file" -o "${file%.*}.webp"; done
 
 // SETTINGS
 const SITE_ROOT = "herluf-ba.github.io";
@@ -26,7 +28,7 @@ type Parsed = {
   meta: {
     title: string;
     image?: string;
-    summary?: string;
+    summary: string;
     publishedAt?: string;
     tags: ReadonlyArray<string>;
   };
@@ -68,10 +70,12 @@ const parse = async (source: string): Promise<Parsed> => {
     source_path.dir.replace(CONTENT_DIR, OUT_DIR),
     source_path.name + ".html"
   );
-  const href = path.join(
-    source_path.dir.replace(CONTENT_DIR, ""),
-    source_path.name + ".html"
-  );
+  const href =
+    "/" +
+    path.join(
+      source_path.dir.replace(CONTENT_DIR, ""),
+      source_path.name + ".html"
+    );
 
   const _public = path.join(
     ...Array((destination.match(/\//g)?.length ?? 0) - 1).fill("..")
@@ -100,7 +104,7 @@ const render_date = (date?: string) =>
 const render_post_card = (parsed: Parsed) => `
 <section class="card">
   ${render_date(parsed.meta.publishedAt)}
-  <a href="/${parsed.href}"><h2>${parsed.meta.title}</h2></a>
+  <a href="${parsed.href}"><h2>${parsed.meta.title}</h2></a>
   ${render_tags(parsed.meta.tags)}
 </section>`;
 
@@ -109,18 +113,18 @@ const render_meta = (parsed: Parsed) => `
 <meta name="title" content="${parsed.meta.title}">
 <meta name="description" content="${parsed.meta.summary}">
 <meta property="og:type" content="website">
-<meta property="og:url" content="${SITE_ROOT}/${parsed.href}">
+<meta property="og:url" content="${SITE_ROOT}${parsed.href ?? ""}">
 <meta property="og:title" content="${parsed.meta.title}">
 <meta property="og:description" content="${parsed.meta.summary}">
 <meta property="og:image" content="${
-  parsed.meta.image ?? "/images/herluf.jpg"
+  parsed.meta.image ?? "/images/herluf.webp"
 }">
 <meta property="twitter:card" content="summary_large_image">
-<meta property="twitter:url" content="${SITE_ROOT}/${parsed.href}">
+<meta property="twitter:url" content="${SITE_ROOT}${parsed.href ?? ""}">
 <meta property="twitter:title" content="${parsed.meta.title}">
 <meta property="twitter:description" content="${parsed.meta.summary}">
 <meta property="twitter:image" content="${
-  parsed.meta.image ?? "/images/herluf.jpg"
+  parsed.meta.image ?? "/images/herluf.webp"
 }">
 `;
 
@@ -169,6 +173,7 @@ for await (const tag of tags) {
     </nav>`,
       meta: {
         title: `Posts about ${tag}`,
+        summary: `Everything I have writting abount ${tag}`,
         tags: [tag],
       },
     })
@@ -189,8 +194,9 @@ await write(
     ${parsed_files.map(render_post_card).join("\n")}
   </nav>`,
     meta: {
-      title: "Herluf B",
-      summary: "A blog about game development as a hobbyist",
+      title: "Herluf B.",
+      summary:
+        "👋 Hi there! I'm Herluf. I work as a web dev and write games for a hobby. Sometimes I write stuff and you can read that stuff right here",
       publishedAt: new Date().toISOString(),
       tags: [],
     },

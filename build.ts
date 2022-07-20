@@ -11,7 +11,7 @@ import { ensureFile } from "https://deno.land/std@0.54.0/fs/ensure_file.ts";
 const SITE_ROOT = "herluf-ba.github.io";
 const TEMPLATE_DIR = "templates";
 const CONTENT_DIR = "content";
-const OUT_DIR = "docs";
+const OUT_DIR = "docs"; // Github pages likes /docs rather than /public 🤷‍♂️
 
 type Page = {
   href: string;
@@ -24,7 +24,7 @@ type Page = {
     title: string;
     image?: string;
     description: string;
-    publishedAt?: string;
+    publishedAt: string;
     tags: ReadonlyArray<string>;
   };
 };
@@ -142,7 +142,9 @@ const render = (template: string, parsed: Page) =>
 ///////// SITE GENERATION /////////
 // Read and parse all posts in content folder
 const markdown_files = await getNestedMdFiles(CONTENT_DIR);
-const parsed_files = await Promise.all(markdown_files.map(parse));
+const parsed_files = (await Promise.all(markdown_files.map(parse))).sort(
+  (a, b) => a.meta.publishedAt?.localeCompare(b.meta.publishedAt)
+);
 
 // Render and save all posts
 for await (const parsed of parsed_files) {
@@ -169,6 +171,7 @@ for await (const tag of tags) {
     meta: {
       title: `Posts about ${tag}`,
       description: `Everything I have writting abount ${tag}`,
+      publishedAt: new Date().toISOString(),
       tags: [tag],
     },
   });

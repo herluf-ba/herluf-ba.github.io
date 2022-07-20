@@ -17,16 +17,16 @@
     
 <title>Writing a static site generator in a single file</title>
 <meta name="title" content="Writing a static site generator in a single file">
-<meta name="description" content="Writing a minimal static site generator using deno, typescript and markdown files">
+<meta name="description" content="Writing a pragmatic static site generator using deno, typescript and markdown files">
 <meta property="og:type" content="website">
 <meta property="og:url" content="herluf-ba.github.io/writing-a-static-site-generator-in-a-single-file.html">
 <meta property="og:title" content="Writing a static site generator in a single file">
-<meta property="og:description" content="Writing a minimal static site generator using deno, typescript and markdown files">
+<meta property="og:description" content="Writing a pragmatic static site generator using deno, typescript and markdown files">
 <meta property="og:image" content="/images/herluf.webp">
 <meta property="twitter:card" content="description_large_image">
 <meta property="twitter:url" content="herluf-ba.github.io/writing-a-static-site-generator-in-a-single-file.html">
 <meta property="twitter:title" content="Writing a static site generator in a single file">
-<meta property="twitter:description" content="Writing a minimal static site generator using deno, typescript and markdown files">
+<meta property="twitter:description" content="Writing a pragmatic static site generator using deno, typescript and markdown files">
 <meta property="twitter:image" content="/images/herluf.webp">
 
   </head>
@@ -53,54 +53,79 @@
 
     <main>
       <h1>Writing a static site generator in a single file</h1>
-      <p>I have made a static site generator. It&#39;s very minimal, but it meets all my needs and I&#39;m pretty happy with how it turned out. </p>
-<p>Here&#39;s my static site generator in its entirety:</p>
+      <p>Since I decided to try to do <a href="herluf-ba.github.io">this blog</a>, I have been looking around for a Static Site Generator (SSG) that does what I want. I looked at <a href="https://jekyllrb.com/">Jekyll</a>, <a href="https://gohugo.io/">Hugo</a>, <a href="https://www.gatsbyjs.com/">Gatsby</a>, <a href="https://www.11ty.dev/">Eleventy</a> and a bunch more. Thruth is any one of these would meet my needs, but I still had this itch that these frameworks were overkill for my usecase, that I would be better off with something smaller. So as a fun project I decided to write my own 🎉.</p>
+<h2 id="trying-to-be-pragmatic">Trying to be pragmatic</h2>
+<p>Maybe I read too much <a href="https://unixsheikh.com/articles/using-a-framework-can-make-you-stupid.html">unixsheikh</a> but lately I&#39;ve been almost agressively trying to keep my code as pragmatic as possible. That means as little external packages as possible, but also as few requirements as possible. In the case of this site I wanted to:</p>
 
-<pre><code class="lang-typescript">import { Marked } from &quot;https://deno.land/x/markdown@v2.0.0/mod.ts&quot;;
+<pre><code class="lang-markdown">- Write posts in markdown format and have them turn into nice HTML.
+- Be able to add images and code snippets to posts
+- Generate an &#39;index&#39; page that displays all posts, sorted by publish date
+- Have a &#39;green score&#39; on lighthouse
+</code></pre>
+<h2 id="planning-a-the-site-generator">Planning a the site generator</h2>
+<p>At its core a Static Site Generator <strong>eats some content data and spits out some html file(s)</strong>. In my case the &quot;content data&quot; is markdown files. As an example here&#39;s <a href="https://github.com/herluf-ba/herluf-ba.github.io/blob/8a93a7e17596896b232dd9465ff09cf4c293a9cb/content/writing-a-static-site-generator-in-a-single-file.md">the one for this post</a>. 
+So my initial plan is to:</p>
+
+<pre><code class="lang-typescript">// 1. Read all markdown files in a target folder
+// 2. Parse each file
+// 3. Transform each file into HTML
+// 3. Write the generated HTML into files in another folder
+</code></pre>
+<p>I also want to add some common styling and some meta tags to each post. For that I&#39;m going to use some very simple HTML templates. These almost speak for themselves:</p>
+
+<pre><code class="lang-html">&lt;!-- Here&#39;s the HTML template for a post --&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+  &lt;head&gt;
+    &lt;!-- ...generic meta stuff, loading some fonts etc. --&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;./assets/styles.css&quot; /&gt;
+    {{META}}
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;header&gt;
+      &lt;a href=&quot;/&quot;&gt;{HB}&lt;/a&gt;
+      &lt;a aria-label=&quot;Github&quot; href=&quot;https://github.com/herluf-ba&quot;&gt;
+        &lt;!-- Inline SVG for github logo --&gt;
+      &lt;/a&gt;
+    &lt;/header&gt;
+    &lt;main&gt;
+      &lt;h1&gt;{{TITLE}}&lt;/h1&gt;
+      &lt;!-- Tags like these are ment to be replaced in the build script we are writing --&gt;
+      {{CONTENT}}
+    &lt;/main&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>So I&#39;ll revise the plan:</p>
+
+<pre><code class="lang-typescript">// 1. Read all markdown files in a target folder
+// 2. Parse each markdown file 
+// 3. Insert parsed markdown into a HTML template
+// 4. Write the generated HTML into files in another folder
+</code></pre>
+<p>And I&#39;ll also need some index page where I can list all posts. This one uses another template, which you can <a href="https://github.com/herluf-ba/herluf-ba.github.io/blob/main/templates/index.html">find here</a>. The final plan is this:</p>
+
+<pre><code class="lang-typescript">// 1. Read all markdown files in a target folder
+// 2. Parse each markdown file 
+// 3. Insert parsed markdown into a HTML template
+// 4. Write the generated HTML into files in public folder
+// 5. Generate an index page and write to public folder
+</code></pre>
+<p>I&#39;ll admit that the title of this post seems a bit click-baity at this point. There is of course more than one file used on this site, but the <a href="https://github.com/herluf-ba/herluf-ba.github.io/blob/main/build.ts">build script</a> <em>is</em> a single file 🤷‍♂️</p>
+<h2 id="writing-some-code">Writing some code</h2>
+<p>I&#39;m writing this generator script in typescript and I have found that the easiest way to run some typescript is to use <a href="https://deno.land/">Deno</a>. You litteraly install a single binary and your are good to go. On my mac all I have to do is:</p>
+
+<pre><code class="lang-bash">brew install deno
+deno run my_typescript.ts
+</code></pre>
+<p>With Deno installed I can get working on <code>// 1. Read all markdown files in a target folder</code>. This one is fairly simple using the Deno standard library (this is turning into a Deno add at this point 🦕)</p>
+
+<pre><code class="lang-typescript">// Run with: deno run --allow-read build.ts
 import * as path from &quot;https://deno.land/std@0.148.0/path/mod.ts&quot;;
-import { ensureFile } from &quot;https://deno.land/std@0.54.0/fs/ensure_file.ts&quot;;
 
-// NOTE: To build entire site run:
-// deno run --allow-read --allow-write build.ts
-// To compress images run:
-// for file in ${OUT_DIR}/images/*; do bin/cwebp &quot;$file&quot; -o &quot;${file%.*}.webp&quot;; done
-
-///////// SETTINGS /////////
-const SITE_ROOT = &quot;herluf-ba.github.io&quot;;
-const TEMPLATE_DIR = &quot;templates&quot;;
 const CONTENT_DIR = &quot;content&quot;;
-const OUT_DIR = &quot;docs&quot;;
-
-type Page = {
-  href: string;
-  content: string;
-  path: {
-    destination: string;
-    public: string;
-  };
-  meta: {
-    title: string;
-    image?: string;
-    description: string;
-    publishedAt?: string;
-    tags: ReadonlyArray&lt;string&gt;;
-  };
-};
-
-///////// GLOBALS /////////
 const decoder = new TextDecoder(&quot;utf-8&quot;);
-const encoder = new TextEncoder();
-const TEMPLATES = {
-  index: decoder.decode(
-    await Deno.readFile(path.join(TEMPLATE_DIR, &quot;index.html&quot;))
-  ),
-  post: decoder.decode(
-    await Deno.readFile(path.join(TEMPLATE_DIR, &quot;post.html&quot;))
-  ),
-  tag: decoder.decode(await Deno.readFile(path.join(TEMPLATE_DIR, &quot;tag.html&quot;))),
-};
 
-///////// FILE IO /////////
 const getNestedMdFiles = async (
   dir: string
 ): Promise&lt;ReadonlyArray&lt;string&gt;&gt; =&gt; {
@@ -117,146 +142,16 @@ const getNestedMdFiles = async (
   return files;
 };
 
-const parse = async (source: string): Promise&lt;Page&gt; =&gt; {
-  const parsed = Marked.parse(decoder.decode(await Deno.readFile(source)));
-  const source_path = path.parse(source);
-  const destination = path.join(
-    source_path.dir.replace(CONTENT_DIR, OUT_DIR),
-    source_path.name + &quot;.html&quot;
-  );
-  const href =
-    &quot;/&quot; +
-    path.join(
-      source_path.dir.replace(CONTENT_DIR, &quot;&quot;),
-      source_path.name + &quot;.html&quot;
-    );
+const parse = async (source: string): Promise&lt;string&gt; =&gt; {
+ const text = decoder.decode(await Deno.readFile(source));
+ // TODO: Parse text
+ return text;
+}
 
-  const nesting_level = (destination.match(/\//g)?.length ?? 0) - 1;
-  const public_path = path.join(...Array(nesting_level).fill(&quot;..&quot;));
-
-  return {
-    href,
-    path: {
-      public: public_path,
-      destination,
-    },
-    ...parsed,
-  } as Page;
-};
-
-const write = async (destination: string, html: string) =&gt; {
-  await ensureFile(destination);
-  await Deno.writeFile(destination, encoder.encode(html), {
-    create: true,
-  });
-};
-
-///////// RENDERING /////////
-const render_tags = (tags: ReadonlyArray&lt;string&gt;) =&gt;
-  tags
-    .map((tag) =&gt; `&lt;a class=&quot;tag&quot; href=&quot;/tag/${tag}.html&quot;&gt;${tag}&lt;/a&gt;`)
-    .join(&quot;\n&quot;);
-
-const render_date = (date?: string) =&gt;
-  date === undefined
-    ? &quot;&quot;
-    : `&lt;span class=&quot;date&quot;&gt;${new Date(date).toLocaleDateString(&quot;en-US&quot;)}&lt;/span&gt;`;
-
-const render_post_card = (parsed: Page) =&gt; `
-&lt;section class=&quot;card&quot;&gt;
-  ${render_date(parsed.meta.publishedAt)}
-  &lt;a href=&quot;${parsed.href}&quot;&gt;&lt;h2&gt;${parsed.meta.title}&lt;/h2&gt;&lt;/a&gt;
-  ${render_tags(parsed.meta.tags)}
-&lt;/section&gt;`;
-
-const render_meta = (parsed: Page) =&gt; `
-&lt;title&gt;${parsed.meta.title}&lt;/title&gt;
-&lt;meta name=&quot;title&quot; content=&quot;${parsed.meta.title}&quot;&gt;
-&lt;meta name=&quot;description&quot; content=&quot;${parsed.meta.description}&quot;&gt;
-&lt;meta property=&quot;og:type&quot; content=&quot;website&quot;&gt;
-&lt;meta property=&quot;og:url&quot; content=&quot;${SITE_ROOT}${parsed.href ?? &quot;&quot;}&quot;&gt;
-&lt;meta property=&quot;og:title&quot; content=&quot;${parsed.meta.title}&quot;&gt;
-&lt;meta property=&quot;og:description&quot; content=&quot;${parsed.meta.description}&quot;&gt;
-&lt;meta property=&quot;og:image&quot; content=&quot;${
-  parsed.meta.image ?? &quot;/images/herluf.webp&quot;
-}&quot;&gt;
-&lt;meta property=&quot;twitter:card&quot; content=&quot;description_large_image&quot;&gt;
-&lt;meta property=&quot;twitter:url&quot; content=&quot;${SITE_ROOT}${parsed.href ?? &quot;&quot;}&quot;&gt;
-&lt;meta property=&quot;twitter:title&quot; content=&quot;${parsed.meta.title}&quot;&gt;
-&lt;meta property=&quot;twitter:description&quot; content=&quot;${parsed.meta.description}&quot;&gt;
-&lt;meta property=&quot;twitter:image&quot; content=&quot;${
-  parsed.meta.image ?? &quot;/images/herluf.webp&quot;
-}&quot;&gt;
-`;
-
-const render = (template: string, parsed: Page) =&gt;
-  template
-    .replaceAll(&quot;{{META}}&quot;, render_meta(parsed))
-    .replaceAll(&quot;{{TITLE}}&quot;, parsed.meta.title)
-    .replaceAll(&quot;{{CONTENT}}&quot;, parsed.content)
-    .replaceAll(&quot;<a class="tag" href="/tag/deno.html">deno</a>
-<a class="tag" href="/tag/webdev.html">webdev</a>
-<a class="tag" href="/tag/typescript.html">typescript</a>&quot;, render_tags(parsed.meta.tags))
-    .replaceAll(&quot;.&quot;, parsed.path.public);
-
-///////// SITE GENERATION /////////
-// Read and parse all posts in content folder
 const markdown_files = await getNestedMdFiles(CONTENT_DIR);
 const parsed_files = await Promise.all(markdown_files.map(parse));
-
-// Render and save all posts
-for await (const parsed of parsed_files) {
-  await write(parsed.path.destination, render(TEMPLATES[&quot;post&quot;], parsed));
-}
-
-// Render and save a page for each tag with only posts that contain that tag
-const tags = Array.from(new Set(parsed_files.flatMap(({ meta }) =&gt; meta.tags)));
-for await (const tag of tags) {
-  const posts_with_tag = parsed_files.filter(({ meta }) =&gt;
-    meta.tags.includes(tag)
-  );
-
-  const tag_page = render(TEMPLATES[&quot;tag&quot;], {
-    href: `/tag/${tag}`,
-    path: {
-      public: &quot;..&quot;,
-      destination: `${OUT_DIR}/tags/${tag}.html`,
-    },
-    content: `
-  &lt;nav&gt;
-    ${posts_with_tag.map(render_post_card).join(&quot;\n&quot;)}
-  &lt;/nav&gt;`,
-    meta: {
-      title: `Posts about ${tag}`,
-      description: `Everything I have writting abount ${tag}`,
-      tags: [tag],
-    },
-  });
-
-  await write(`${OUT_DIR}/tag/${tag}.html`, tag_page);
-}
-
-// Render and save a frontpage
-const front_page = render(TEMPLATES[&quot;index&quot;], {
-  href: &quot;/&quot;,
-  path: {
-    public: &quot;.&quot;,
-    destination: &quot;${OUT_DIR}/index.html&quot;,
-  },
-  content: `
-&lt;nav&gt;
-  ${parsed_files.map(render_post_card).join(&quot;\n&quot;)}
-&lt;/nav&gt;`,
-  meta: {
-    title: &quot;Herluf B.&quot;,
-    description:
-      &quot;👋 Hi there! I&#39;m Herluf. I work as a web dev and write games for a hobby. Sometimes I write stuff and you can read that stuff right here&quot;,
-    publishedAt: new Date().toISOString(),
-    tags: [],
-  },
-});
-await write(`${OUT_DIR}/index.html`, front_page);
 </code></pre>
+<h2 id="parsing-markdown">Parsing Markdown</h2>
 
     </main>
 

@@ -14,26 +14,48 @@
     <link rel="stylesheet" href="./assets/styles.css" />
     <link rel="stylesheet" href="./assets/prism.css" />
 
-    
-<title>Writing a static site generator shouldn't be that hard</title>
-<meta name="title" content="Writing a static site generator shouldn't be that hard">
-<meta name="description" content="An article about how actually avoiding overcomplication can make for better solutions">
-<meta property="og:type" content="website">
-<meta property="og:url" content="herluf-ba.github.io/writing-a-static-site-generator-should-be-that-hard.html">
-<meta property="og:title" content="Writing a static site generator shouldn't be that hard">
-<meta property="og:description" content="An article about how actually avoiding overcomplication can make for better solutions">
-<meta property="og:image" content="/images/herluf.webp">
-<meta property="twitter:card" content="summary_large_image">
-<meta property="twitter:url" content="herluf-ba.github.io/writing-a-static-site-generator-should-be-that-hard.html">
-<meta property="twitter:title" content="Writing a static site generator shouldn't be that hard">
-<meta property="twitter:description" content="An article about how actually avoiding overcomplication can make for better solutions">
-<meta property="twitter:image" content="/images/herluf.webp">
-
+    <title>Writing a static site generator shouldn't be that hard</title>
+    <meta
+      name="title"
+      content="Writing a static site generator shouldn't be that hard"
+    />
+    <meta
+      name="description"
+      content="An article about how actually avoiding overcomplication can make for better solutions"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="herluf-ba.github.io/writing-a-static-site-generator-should-be-that-hard.html"
+    />
+    <meta
+      property="og:title"
+      content="Writing a static site generator shouldn't be that hard"
+    />
+    <meta
+      property="og:description"
+      content="An article about how actually avoiding overcomplication can make for better solutions"
+    />
+    <meta property="og:image" content="/images/herluf.webp" />
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta
+      property="twitter:url"
+      content="herluf-ba.github.io/writing-a-static-site-generator-should-be-that-hard.html"
+    />
+    <meta
+      property="twitter:title"
+      content="Writing a static site generator shouldn't be that hard"
+    />
+    <meta
+      property="twitter:description"
+      content="An article about how actually avoiding overcomplication can make for better solutions"
+    />
+    <meta property="twitter:image" content="/images/herluf.webp" />
   </head>
   <body>
     <header>
       <a href="/"> {HB} </a>
-      <a href="https://github.com/herluf-ba">
+      <a aria-label="Github" href="https://github.com/herluf-ba">
         <svg
           width="32"
           height="32"
@@ -53,13 +75,24 @@
 
     <main>
       <h1>Writing a static site generator shouldn't be that hard</h1>
-      <p>I work in web development. Recently I&#39;ve found myself becoming increasingly frustrated with <em>overcomplication</em>. So many of the challenges I have to face at work stem from an increasingly complex setup that in the end comes together to produce a pretty standard website. So, half as a fun side-project and half out of spite, I&#39;m writing a static site generator to illustrate what I consider a more pragmatic approach. This entire site you are on now was generated using that very site generator ✨</p>
-<h2 id="how-s-it-work-">How&#39;s it work?</h2>
-<h2 id="but-don-t-you-need-x-">But don&#39;t you need <em>X</em>?</h2>
-<h2 id="so-out-the-window-with-everything-">So out the window with everything?</h2>
-<p>Code Block (md2html.ts)</p>
+      <p>
+        I work in web development. Recently I&#39;ve found myself becoming
+        increasingly frustrated with <em>overcomplication</em>. So many of the
+        challenges I have to face at work stem from an increasingly complex
+        setup that in the end comes together to produce a pretty standard
+        website. So, half as a fun side-project and half out of spite, I&#39;m
+        writing a static site generator to illustrate what I consider a more
+        pragmatic approach. This entire site you are on now was generated using
+        that very site generator ✨
+      </p>
+      <h2 id="how-s-it-work-">How&#39;s it work?</h2>
+      <h2 id="but-don-t-you-need-x-">But don&#39;t you need <em>X</em>?</h2>
+      <h2 id="so-out-the-window-with-everything-">
+        So out the window with everything?
+      </h2>
+      <p>Code Block (md2html.ts)</p>
 
-<pre><code class="lang-typescript">import { Marked } from &quot;./mod.ts&quot;;
+      <pre><code class="lang-typescript">import { Marked } from &quot;./mod.ts&quot;;
 
 const decoder = new TextDecoder(&quot;utf-8&quot;);
 const filename = Deno.args[0];
@@ -68,7 +101,6 @@ const markup = Marked.parse(markdown);
 console.log(markup.content);
 console.log(JSON.stringify(markup.meta));
 </code></pre>
-
     </main>
 
     <script src="./assets/prism.js"></script>

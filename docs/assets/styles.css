@@ -64,8 +64,8 @@ blockquote > p {
 img {
   display: block;
   margin: 0 auto;
+  max-width: 100%;
   width: 600px;
-  height: 500px;
 }
 
 h1 {

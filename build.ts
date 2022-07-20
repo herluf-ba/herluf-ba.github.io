@@ -2,22 +2,18 @@ import { Marked } from "https://deno.land/x/markdown@v2.0.0/mod.ts";
 import * as path from "https://deno.land/std@0.148.0/path/mod.ts";
 import { ensureFile } from "https://deno.land/std@0.54.0/fs/ensure_file.ts";
 
-// TODO:
-// - deploy
-// - write blogpost
-
 // NOTE: To build entire site run:
 // deno run --allow-read --allow-write build.ts
 // To compress images run:
 // for file in ${OUT_DIR}/images/*; do bin/cwebp "$file" -o "${file%.*}.webp"; done
 
-// SETTINGS
+///////// SETTINGS /////////
 const SITE_ROOT = "herluf-ba.github.io";
 const TEMPLATE_DIR = "templates";
 const CONTENT_DIR = "content";
 const OUT_DIR = "docs";
 
-type Parsed = {
+type Page = {
   href: string;
   content: string;
   path: {
@@ -27,13 +23,13 @@ type Parsed = {
   meta: {
     title: string;
     image?: string;
-    summary: string;
+    description: string;
     publishedAt?: string;
     tags: ReadonlyArray<string>;
   };
 };
 
-// GLOBALS
+///////// GLOBALS /////////
 const decoder = new TextDecoder("utf-8");
 const encoder = new TextEncoder();
 const TEMPLATES = {
@@ -46,6 +42,7 @@ const TEMPLATES = {
   tag: decoder.decode(await Deno.readFile(path.join(TEMPLATE_DIR, "tag.html"))),
 };
 
+///////// FILE IO /////////
 const getNestedMdFiles = async (
   dir: string
 ): Promise<ReadonlyArray<string>> => {
@@ -62,7 +59,7 @@ const getNestedMdFiles = async (
   return files;
 };
 
-const parse = async (source: string): Promise<Parsed> => {
+const parse = async (source: string): Promise<Page> => {
   const parsed = Marked.parse(decoder.decode(await Deno.readFile(source)));
   const source_path = path.parse(source);
   const destination = path.join(
@@ -76,20 +73,27 @@ const parse = async (source: string): Promise<Parsed> => {
       source_path.name + ".html"
     );
 
-  const _public = path.join(
-    ...Array((destination.match(/\//g)?.length ?? 0) - 1).fill("..")
-  );
+  const nesting_level = (destination.match(/\//g)?.length ?? 0) - 1;
+  const public_path = path.join(...Array(nesting_level).fill(".."));
 
   return {
     href,
     path: {
-      public: _public,
+      public: public_path,
       destination,
     },
     ...parsed,
-  } as Parsed;
+  } as Page;
 };
 
+const write = async (destination: string, html: string) => {
+  await ensureFile(destination);
+  await Deno.writeFile(destination, encoder.encode(html), {
+    create: true,
+  });
+};
+
+///////// RENDERING /////////
 const render_tags = (tags: ReadonlyArray<string>) =>
   tags
     .map((tag) => `<a class="tag" href="/tag/${tag}.html">${tag}</a>`)
@@ -100,34 +104,34 @@ const render_date = (date?: string) =>
     ? ""
     : `<span class="date">${new Date(date).toLocaleDateString("en-US")}</span>`;
 
-const render_post_card = (parsed: Parsed) => `
+const render_post_card = (parsed: Page) => `
 <section class="card">
   ${render_date(parsed.meta.publishedAt)}
   <a href="${parsed.href}"><h2>${parsed.meta.title}</h2></a>
   ${render_tags(parsed.meta.tags)}
 </section>`;
 
-const render_meta = (parsed: Parsed) => `
+const render_meta = (parsed: Page) => `
 <title>${parsed.meta.title}</title>
 <meta name="title" content="${parsed.meta.title}">
-<meta name="description" content="${parsed.meta.summary}">
+<meta name="description" content="${parsed.meta.description}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="${SITE_ROOT}${parsed.href ?? ""}">
 <meta property="og:title" content="${parsed.meta.title}">
-<meta property="og:description" content="${parsed.meta.summary}">
+<meta property="og:description" content="${parsed.meta.description}">
 <meta property="og:image" content="${
   parsed.meta.image ?? "/images/herluf.webp"
 }">
-<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:card" content="description_large_image">
 <meta property="twitter:url" content="${SITE_ROOT}${parsed.href ?? ""}">
 <meta property="twitter:title" content="${parsed.meta.title}">
-<meta property="twitter:description" content="${parsed.meta.summary}">
+<meta property="twitter:description" content="${parsed.meta.description}">
 <meta property="twitter:image" content="${
   parsed.meta.image ?? "/images/herluf.webp"
 }">
 `;
 
-const render = (template: string, parsed: Parsed) =>
+const render = (template: string, parsed: Page) =>
   template
     .replaceAll("{{META}}", render_meta(parsed))
     .replaceAll("{{TITLE}}", parsed.meta.title)
@@ -135,13 +139,7 @@ const render = (template: string, parsed: Parsed) =>
     .replaceAll("{{TAGS}}", render_tags(parsed.meta.tags))
     .replaceAll("{{PUBLIC}}", parsed.path.public);
 
-const write = async (destination: string, html: string) => {
-  await ensureFile(destination);
-  await Deno.writeFile(destination, encoder.encode(html), {
-    create: true,
-  });
-};
-
+///////// SITE GENERATION /////////
 // Read and parse all posts in content folder
 const markdown_files = await getNestedMdFiles(CONTENT_DIR);
 const parsed_files = await Promise.all(markdown_files.map(parse));
@@ -158,46 +156,43 @@ for await (const tag of tags) {
     meta.tags.includes(tag)
   );
 
-  await write(
-    `${OUT_DIR}/tag/${tag}.html`,
-    render(TEMPLATES["tag"], {
-      href: `/tag/${tag}`,
-      path: {
-        public: "..",
-        destination: `${OUT_DIR}/tags/${tag}.html`,
-      },
-      content: `
-    <nav>
-      ${posts_with_tag.map(render_post_card).join("\n")}
-    </nav>`,
-      meta: {
-        title: `Posts about ${tag}`,
-        summary: `Everything I have writting abount ${tag}`,
-        tags: [tag],
-      },
-    })
-  );
-}
-
-// Render and save a frontpage
-await write(
-  `${OUT_DIR}/index.html`,
-  render(TEMPLATES["index"], {
-    href: "/",
+  const tag_page = render(TEMPLATES["tag"], {
+    href: `/tag/${tag}`,
     path: {
-      public: ".",
-      destination: "${OUT_DIR}/index.html",
+      public: "..",
+      destination: `${OUT_DIR}/tags/${tag}.html`,
     },
     content: `
   <nav>
-    ${parsed_files.map(render_post_card).join("\n")}
+    ${posts_with_tag.map(render_post_card).join("\n")}
   </nav>`,
     meta: {
-      title: "Herluf B.",
-      summary:
-        "👋 Hi there! I'm Herluf. I work as a web dev and write games for a hobby. Sometimes I write stuff and you can read that stuff right here",
-      publishedAt: new Date().toISOString(),
-      tags: [],
+      title: `Posts about ${tag}`,
+      description: `Everything I have writting abount ${tag}`,
+      tags: [tag],
     },
-  })
-);
+  });
+
+  await write(`${OUT_DIR}/tag/${tag}.html`, tag_page);
+}
+
+// Render and save a frontpage
+const front_page = render(TEMPLATES["index"], {
+  href: "/",
+  path: {
+    public: ".",
+    destination: "${OUT_DIR}/index.html",
+  },
+  content: `
+<nav>
+  ${parsed_files.map(render_post_card).join("\n")}
+</nav>`,
+  meta: {
+    title: "Herluf B.",
+    description:
+      "👋 Hi there! I'm Herluf. I work as a web dev and write games for a hobby. Sometimes I write stuff and you can read that stuff right here",
+    publishedAt: new Date().toISOString(),
+    tags: [],
+  },
+});
+await write(`${OUT_DIR}/index.html`, front_page);

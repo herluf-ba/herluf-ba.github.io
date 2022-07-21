@@ -78,12 +78,10 @@ const parse = async (source: string): Promise<Page> => {
 
   return {
     href,
-    path: {
-      public: public_path,
-      destination,
-    },
+    public_path,
+    destination,
     ...parsed,
-  };
+  } as Page;
 };
 
 const write = async (destination: string, html: string) => {

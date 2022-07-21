@@ -15,11 +15,10 @@ const OUT_DIR = "docs"; // Github pages likes /docs rather than /public 🤷‍�
 
 type Page = {
   href: string;
+  destination: string;
+  public_path: string;
+
   content: string;
-  path: {
-    destination: string;
-    public: string;
-  };
   meta: {
     title: string;
     image?: string;
@@ -60,7 +59,8 @@ const getNestedMdFiles = async (
 };
 
 const parse = async (source: string): Promise<Page> => {
-  const parsed = Marked.parse(decoder.decode(await Deno.readFile(source)));
+  const text = decoder.decode(await Deno.readFile(source));
+  const parsed = Marked.parse(text);
   const source_path = path.parse(source);
   const destination = path.join(
     source_path.dir.replace(CONTENT_DIR, OUT_DIR),
@@ -83,7 +83,7 @@ const parse = async (source: string): Promise<Page> => {
       destination,
     },
     ...parsed,
-  } as Page;
+  };
 };
 
 const write = async (destination: string, html: string) => {
@@ -137,7 +137,7 @@ const render = (template: string, parsed: Page) =>
     .replaceAll("{{TITLE}}", parsed.meta.title)
     .replaceAll("{{CONTENT}}", parsed.content)
     .replaceAll("{{TAGS}}", render_tags(parsed.meta.tags))
-    .replaceAll("{{PUBLIC}}", parsed.path.public);
+    .replaceAll("{{PUBLIC}}", parsed.public_path);
 
 ///////// SITE GENERATION /////////
 // Read and parse all posts in content folder
@@ -148,7 +148,7 @@ const parsed_files = (await Promise.all(markdown_files.map(parse))).sort(
 
 // Render and save all posts
 for await (const parsed of parsed_files) {
-  await write(parsed.path.destination, render(TEMPLATES["post"], parsed));
+  await write(parsed.destination, render(TEMPLATES["post"], parsed));
 }
 
 // Render and save a page for each tag with only posts that contain that tag
@@ -160,10 +160,8 @@ for await (const tag of tags) {
 
   const tag_page = render(TEMPLATES["tag"], {
     href: `/tag/${tag}`,
-    path: {
-      public: "..",
-      destination: `${OUT_DIR}/tags/${tag}.html`,
-    },
+    public_path: "..",
+    destination: `${OUT_DIR}/tags/${tag}.html`,
     content: `
   <nav>
     ${posts_with_tag.map(render_post_card).join("\n")}
@@ -182,10 +180,8 @@ for await (const tag of tags) {
 // Render and save a frontpage
 const front_page = render(TEMPLATES["index"], {
   href: "/",
-  path: {
-    public: ".",
-    destination: "${OUT_DIR}/index.html",
-  },
+  public_path: ".",
+  destination: "${OUT_DIR}/index.html",
   content: `
 <nav>
   ${parsed_files.map(render_post_card).join("\n")}

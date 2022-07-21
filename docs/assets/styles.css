@@ -23,7 +23,8 @@ main {
   background-color: var(--color-bg);
 }
 
-p {
+p,
+li {
   font-family: Inconsolata, monospace;
   font-size: 18px;
   letter-spacing: 0.02em;
@@ -42,8 +43,24 @@ a:visited {
 p,
 img,
 pre,
-blockquote {
+blockquote,
+ul,
+ol {
   margin-bottom: 32px;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0 0 0 16px;
+}
+
+ul > li::before {
+  content: "- ";
+  color: var(--color-primary);
+}
+
+p + ul {
+  margin-top: -32px;
 }
 
 pre,
@@ -66,6 +83,10 @@ img {
   margin: 0 auto;
   max-width: 100%;
   width: 600px;
+}
+
+li {
+  list-style-position: inside;
 }
 
 h1 {

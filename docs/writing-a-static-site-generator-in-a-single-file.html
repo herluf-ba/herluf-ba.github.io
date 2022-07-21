@@ -53,11 +53,16 @@
 
     <main>
       <h1>Writing a static site generator in a single file</h1>
-      <p>Since I decided to try to do <a href="herluf-ba.github.io">this blog</a>, I have been looking around for a Static Site Generator (SSG) that does what I want. Just a simple setup, that maps markdown files to HTML. I looked at <a href="https://jekyllrb.com/">Jekyll</a>, <a href="https://gohugo.io/">Hugo</a>, <a href="https://www.gatsbyjs.com/">Gatsby</a>, <a href="https://www.11ty.dev/">Eleventy</a> and a bunch more. Thruth is any one of these would meet my needs, but I still had this itch that these frameworks were overkill for my usecase, that I would be better off with something smaller. So as a fun project I decided to write my own 🎉.</p>
-<h2 id="planning-the-site-generator">Planning the site generator</h2>
-<p>At its core a Static Site Generator <strong>eats some content data and spits out some html file(s)</strong>. In my case the &quot;content data&quot; is markdown files. As an example here&#39;s <a href="https://github.com/herluf-ba/herluf-ba.github.io/blob/8a93a7e17596896b232dd9465ff09cf4c293a9cb/content/writing-a-static-site-generator-in-a-single-file.md">the one for this post</a>. I also want to add some common styling and some meta tags to each post. For that I&#39;m going to use some very simple HTML templates. These almost speak for themselves:</p>
+      <p>Since I decided to try to write <a href="https://herluf-ba.github.io">my own blog</a>, I have been looking around for a Static Site Generator (SSG). What I wanted was a pragmatic setup, that maps markdown files to HTML. Simple as that. </p>
+<p>I looked up Static Site Generators such as <a href="https://jekyllrb.com/">Jekyll</a>, <a href="https://gohugo.io/">Hugo</a>, <a href="https://www.gatsbyjs.com/">Gatsby</a>, <a href="https://www.11ty.dev/">Eleventy</a> and a bunch more. Thruth is any one of these would meet my needs, but I still had this itch that these frameworks were overkill for my use-case. I would be better off with something smaller. </p>
+<p>So as a fun project I decided to write my own SSG. As a challenge I wanted to see if I could do it in just one single file. </p>
+<p>Here&#39;s how I did it 🎉</p>
+<h2 id="how-to-plan-a-site-generator">How to plan a site generator</h2>
+<p>At its core a Static Site Generator <strong>eats some content data and spits out some html file(s)</strong>. </p>
+<p>In my case the &quot;content data&quot; is markdown files. Here&#39;s <a href="https://github.com/herluf-ba/herluf-ba.github.io/blob/8a93a7e17596896b232dd9465ff09cf4c293a9cb/content/writing-a-static-site-generator-in-a-single-file.md">the one for this post</a>. This is everything I want to feed my SSG, and still have it only spit out a single html file.</p>
+<p>Besides the actual content data, I also want to add some common styling and some meta tags to each post. For that I&#39;m going to use these very simple HTML templates:</p>
 
-<pre><code class="lang-html">&lt;!-- Here&#39;s the HTML template for a post --&gt;
+<pre><code class="lang-html">&lt;!-- HTML template for a post --&gt;
 &lt;!DOCTYPE html&gt;
 &lt;html lang=&quot;en&quot;&gt;
   &lt;head&gt;
@@ -80,20 +85,21 @@
   &lt;/body&gt;
 &lt;/html&gt;
 </code></pre>
-<p>After writing these TODO&#39;s in my build script I&#39;m ready to get codin&#39; 💻</p>
+<p>In the build script I wrote these TODO&#39;s to try and split up the site generation into its logical parts:</p>
 
 <pre><code class="lang-typescript">// 1. Read all markdown files in a target folder
 // 2. Parse each markdown file 
 // 3. Insert parsed markdown into a HTML template
 // 4. Write the generated HTML into files in public folder
 </code></pre>
-<h2 id="writing-some-code">Writing some code</h2>
-<p>I&#39;m writing this generator script in typescript and I have found that the easiest way to run some typescript is to use <a href="https://deno.land/">Deno</a>. You litteraly install a single binary and your are good to go. On my mac all I have to do is:</p>
+<p>With that, I&#39;m ready to get codin&#39; 💻</p>
+<h2 id="writing-a-generator-script-using-deno">Writing a generator script using Deno</h2>
+<p>I&#39;m writing this generator script in typescript and I have found that the easiest way to run some typescript is to use <a href="https://deno.land/">Deno</a>. You literaly install a single binary and you&#39;re are good to go. On my mac all I have to do is:</p>
 
 <pre><code class="lang-bash">brew install deno
 deno run my_typescript.ts
 </code></pre>
-<p>With Deno installed I can get working on reading markdown files from a folder. This one is fairly simple using the Deno standard library (this is turning into a Deno ad at this point 🦕)</p>
+<p>With Deno installed I can get working on reading markdown files from a folder. This one is fairly simple using the Deno standard library (this post is turning into a Deno ad at this point 🦕)</p>
 
 <pre><code class="lang-typescript">// Run with: deno run --allow-read build.ts
 import * as path from &quot;https://deno.land/std@0.148.0/path/mod.ts&quot;;
@@ -127,7 +133,8 @@ const markdown_files = await getNestedMdFiles(CONTENT_DIR);
 const parsed_files = await Promise.all(markdown_files.map(parse));
 </code></pre>
 <h2 id="parsing-markdown">Parsing Markdown</h2>
-<p>To turn markdown into HTML is a two step process. First the markdown needs to be parsed into a data-structure that can be manipulated and then it can be translated to HTML. I will be using the abtly named <a href="https://deno.land/x/markdown@v2.0.0">markdown</a> package to both of these in one fell swoop. It has a fairly simple interface and seems to produce nice HTML, so I like it for my project. I will however write my code such that it&#39;s easy to rip out the package later, should our relationship sour in the future 🤞.</p>
+<p>To turn markdown into HTML is a two step process. First the markdown needs to be parsed into a data-structure that can be manipulated. Then it can be translated to HTML. </p>
+<p>I will be using the abtly named <a href="https://deno.land/x/markdown@v2.0.0">markdown</a> package to do both of these in one fell swoop. I like it for my project, because it has a fairly simple interface and seems to produce nice HTML. I will, however, write my code such that it&#39;s easy to rip out the package later, should our relationship sour in the future.</p>
 
 <pre><code class="lang-typescript">import { Marked } from &quot;https://deno.land/x/markdown@v2.0.0/mod.ts&quot;;
 
@@ -182,7 +189,7 @@ const markdown_files = await getNestedMdFiles(CONTENT_DIR);
 const parsed_files = await Promise.all(markdown_files.map(parse));
 </code></pre>
 <h2 id="generatin-me-some-html-files">Generatin&#39; me some HTML files</h2>
-<p>With the parsed markdown ready to go it&#39;s finally time to do the G part for SSG! Actually this step is problably the simplest of them all, I&#39;ll write a dead simple render function and pass each Page object along with the HTML template to it.</p>
+<p>With the parsed markdown ready to go it&#39;s finally time to do the G part for SSG! Actually this step is the simplest of them all. I&#39;ll just write a dead simple render function and pass each Page object along with the HTML template to it.</p>
 
 <pre><code class="lang-typescript">const SITE_ROOT = &quot;herluf-ba.github.io&quot;;
 const TEMPLATE_DIR = &quot;templates&quot;;
@@ -224,7 +231,7 @@ for await (const parsed of parsed_files) {
 }
 </code></pre>
 <p>Now the build script is able to transform markdown posts into static HTML files 🎉</p>
-<h2 id="next-steps">Next steps</h2>
+<h2 id="additional-features">Additional features</h2>
 <p>There&#39;s still some features that I didn&#39;t mention in this post that I ended up implementing too. These are:</p>
 
 <ul>
@@ -232,7 +239,8 @@ for await (const parsed of parsed_files) {
 <li>A tagging system for adding posts to categories</li>
 <li>Some basic meta-data for SEO-tags</li>
 </ul>
-<p>You can read the final <a href="https://github.com/herluf-ba/herluf-ba.github.io/blob/main/build.ts">build script here</a>. It came out just under 200 lines ✨ I was glad to realize that it wasn&#39;t difficult to build on top of the features I already had. For instance, this is how I generate the front page:</p>
+<p>You can read the final <a href="https://github.com/herluf-ba/herluf-ba.github.io/blob/main/build.ts">build script here</a>. It came out just under 200 lines ✨ </p>
+<p>I was glad to realize that it wasn&#39;t difficult to build on top of the features I already had. For instance, this is how I generate the front page:</p>
 
 <pre><code class="lang-typescript">// Render and save a frontpage
 const front_page = render(TEMPLATES[&quot;index&quot;], {
@@ -253,6 +261,7 @@ const front_page = render(TEMPLATES[&quot;index&quot;], {
 });
 await write(`${OUT_DIR}/index.html`, front_page);
 </code></pre>
+<p>Thanks for reading!</p>
 
     </main>
 

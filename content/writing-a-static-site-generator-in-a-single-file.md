@@ -9,15 +9,6 @@ tags:
 ---
 Since I decided to try to do [this blog](herluf-ba.github.io), I have been looking around for a Static Site Generator (SSG) that does what I want. Just a simple setup, that maps markdown files to HTML. I looked at [Jekyll](https://jekyllrb.com/), [Hugo](https://gohugo.io/), [Gatsby](https://www.gatsbyjs.com/), [Eleventy](https://www.11ty.dev/) and a bunch more. Thruth is any one of these would meet my needs, but I still had this itch that these frameworks were overkill for my usecase, that I would be better off with something smaller. So as a fun project I decided to write my own 🎉.
 
-## Trying to be pragmatic
-Maybe I read too much [unixsheikh](https://unixsheikh.com/articles/using-a-framework-can-make-you-stupid.html) but lately I've been almost agressively trying to keep my code as pragmatic as possible. That means as little external packages as possible, but also as few requirements as possible. In the case of this site I wanted to:
-```markdown
-- Write posts in markdown format and have them turn into nice HTML.
-- Be able to add images and code snippets to posts
-- Generate an 'index' page that displays all posts, sorted by publish date
-- Have a 'green score' on lighthouse
-```
-
 ## Planning the site generator
 At its core a Static Site Generator **eats some content data and spits out some html file(s)**. In my case the "content data" is markdown files. As an example here's [the one for this post](https://github.com/herluf-ba/herluf-ba.github.io/blob/8a93a7e17596896b232dd9465ff09cf4c293a9cb/content/writing-a-static-site-generator-in-a-single-file.md). I also want to add some common styling and some meta tags to each post. For that I'm going to use some very simple HTML templates. These almost speak for themselves:
 ```html
@@ -44,13 +35,13 @@ At its core a Static Site Generator **eats some content data and spits out some 
   </body>
 </html>
 ```
-And I'll also need some index page where I can list all posts. This one uses another template, which you can [find here](https://github.com/herluf-ba/herluf-ba.github.io/blob/main/templates/index.html). So for now the build script can just be these todo comments:
+
+After writing these TODO's in my build script I'm ready to get codin' 💻
 ```typescript
 // 1. Read all markdown files in a target folder
 // 2. Parse each markdown file 
 // 3. Insert parsed markdown into a HTML template
 // 4. Write the generated HTML into files in public folder
-// 5. Generate an index page and write to public folder
 ```
 
 ## Writing some code
@@ -60,7 +51,7 @@ brew install deno
 deno run my_typescript.ts
 ```
 
-With Deno installed I can get working on reading markdown files from a folder. This one is fairly simple using the Deno standard library (this is turning into a Deno add at this point 🦕)
+With Deno installed I can get working on reading markdown files from a folder. This one is fairly simple using the Deno standard library (this is turning into a Deno ad at this point 🦕)
 ```typescript
 // Run with: deno run --allow-read build.ts
 import * as path from "https://deno.land/std@0.148.0/path/mod.ts";
@@ -95,7 +86,7 @@ const parsed_files = await Promise.all(markdown_files.map(parse));
 ```
 
 ## Parsing Markdown
-To turn markdown into HTML we first need to parse it to turn it into a data-structure that can be manipulated. Then as a second step we can translate this data-structure to HTML. I will be using a package to both of these in one fell swoop. It's abtly named [markdown](https://deno.land/x/markdown@v2.0.0), has a fairly simple interface and seems to produce nice HTML, so I like it for my project. I will however write my code such that it's easy to rip out the package later, should our relationship sour in the future 🤞.
+To turn markdown into HTML is a two step process. First the markdown needs to be parsed into a data-structure that can be manipulated and then it can be translated to HTML. I will be using the abtly named [markdown](https://deno.land/x/markdown@v2.0.0) package to both of these in one fell swoop. It has a fairly simple interface and seems to produce nice HTML, so I like it for my project. I will however write my code such that it's easy to rip out the package later, should our relationship sour in the future 🤞.
 ```typescript
 import { Marked } from "https://deno.land/x/markdown@v2.0.0/mod.ts";
 
@@ -151,7 +142,7 @@ const parsed_files = await Promise.all(markdown_files.map(parse));
 ```
 
 ## Generatin' me some HTML files
-With the parsed markdown ready to go it's finally time to do the G part for SSG! Actually this step is problably the simplest of them all! I'll write a dead simple render function and pass each Page object along with the HTML template to it.
+With the parsed markdown ready to go it's finally time to do the G part for SSG! Actually this step is problably the simplest of them all, I'll write a dead simple render function and pass each Page object along with the HTML template to it.
 
 ```typescript
 const SITE_ROOT = "herluf-ba.github.io";
@@ -193,15 +184,15 @@ for await (const parsed of parsed_files) {
   await write(parsed.destination, rendered_post);
 }
 ```
-Now the build script is able to transform markdown into HTML 🎉
+Now the build script is able to transform markdown posts into static HTML files 🎉
 
 ## Next steps
 There's still some features that I didn't mention in this post that I ended up implementing too. These are:
 - Generating an index page that lists all posts
 - A tagging system for adding posts to categories
-- Some basic meta-data for SEO-tag
+- Some basic meta-data for SEO-tags
 
-I was glad to realize that it wasn't a difficult to build on top of the features I already have. For instance, this is how I generate the front page:
+You can read the final [build script here](https://github.com/herluf-ba/herluf-ba.github.io/blob/main/build.ts). It came out just under 200 lines ✨ I was glad to realize that it wasn't difficult to build on top of the features I already had. For instance, this is how I generate the front page:
 ```typescript
 // Render and save a frontpage
 const front_page = render(TEMPLATES["index"], {

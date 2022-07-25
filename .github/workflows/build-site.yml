@@ -27,14 +27,10 @@ jobs:
         uses: denoland/setup-deno@004814556e37c54a2f6e31384c9e18e983317366
         with:
           deno-version: v1.x
-
-      - name: Build site
-        run: deno run --allow-read --allow-write build.ts
-        
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v9
+      - name: Build
+      - uses: sterlingwes/gh-pages-deploy-action@v1.1
         with:
-          author_name: BuildBot
-          author_email: herlufbaggesen13@gmail.com
-          message: 'Generated site'
-          add: '*'
+          access-token: ${{ secrets.ACCESS_TOKEN }}
+          source-directory: docs
+          deploy-branch: main
+          build-command: deno run --allow-read --allow-write build.ts

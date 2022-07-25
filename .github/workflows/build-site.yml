@@ -24,10 +24,17 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup Deno
-        # uses: denoland/setup-deno@v1
         uses: denoland/setup-deno@004814556e37c54a2f6e31384c9e18e983317366
         with:
           deno-version: v1.x
 
       - name: Build site
         run: deno run --allow-read --allow-write build.ts
+        
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: BuildBot
+          author_email: herlufbaggesen13@gmail.com
+          message: 'Generated site'
+          add: '*'

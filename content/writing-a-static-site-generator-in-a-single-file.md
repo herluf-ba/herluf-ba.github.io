@@ -16,7 +16,7 @@ So as a fun project I decided to write my own SSG. As a challenge, I wanted to s
 Here's how I did it 🎉
 
 ## How to plan a site generator
-At its core, a Static Site Generator **eats some content data and spits out some HTML file(s)**. In my case, the "content data" is markdown files. Here's [the one for this post](https://github.com/herluf-ba/herluf-ba.github.io/edit/main/content/writing-a-static-site-generator-in-a-single-file.md). This is everything I want to feed my SSG, and still have it spit out an HTML file.
+At its core, a Static Site Generator **eats some content data and spits out some HTML file(s)**. In my case, the "content data" is markdown files. Here's [the one for this post](https://github.com/herluf-ba/herluf-ba.github.io/edit/main/content/writing-a-static-site-generator-in-a-single-file.md). This along with the HTML template is everything I want to feed my SSG, and then just have it spit out an HTML file for each post.
 
 Besides the actual content data, I also want to add some common styling and some meta tags to each post. For that I'm going to use these very simple HTML templates:
 ```html

@@ -141,7 +141,7 @@ const render = (template: string, parsed: Page) =>
 // Read and parse all posts in content folder
 const markdown_files = await getNestedMdFiles(CONTENT_DIR);
 const parsed_files = (await Promise.all(markdown_files.map(parse))).sort(
-  (a, b) => a.meta.publishedAt?.localeCompare(b.meta.publishedAt)
+  (a, b) => b.meta.publishedAt?.localeCompare(a.meta.publishedAt)
 );
 
 // Render and save all posts

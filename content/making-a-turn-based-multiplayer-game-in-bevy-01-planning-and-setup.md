@@ -1,7 +1,6 @@
-
 ---
-title : Making a turn based multiplayer game in Bevy 1/3: What's a turn based game anyway?
-description : A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 1/3 which goes into what charaterizes a turn based game and presents a pattern for synchronizing states between players.
+title : Making a turn based multiplayer game in Rust - What's a turn based game anyway? (part 1/3)
+description : 'A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 1/3 which goes into what charaterizes a turn based game and presents a pattern for synchronizing states between players.'
 publishedAt: '2022-07-25T12:00:00Z'
 tags: 
   - rust
@@ -21,39 +20,39 @@ Turn-based games are games where a group of players play the game by performing 
 
 A very important trait of what we will call "turn-based" is that **the state of the game can be detemined solely from a sequence of actions**. This trait has some nice concequences that we will be exploiting once we start writing code. To get familiar with these derived consequenses, lets consider an example from one of the OG turn-based games: Chess ♟
 
-TODO: IMAGE FROM POSITION 9 https://www.chess.com/players/garry-kasparov GOES HERE
+![A position in a game of chess](../images/chess-position.webp)
 
 Let say we wanted to save the state of the board in the picture above. Well that's fairly straight forward, we could just do something like
 ```rust
 enum Piece {
   // White pawn, bishop, knight, rook, queen and king 
-  p, b, n, r, q, k,
+  WP, WB, WN, WR, WQ, WK,
   // Black pawn, bishop, knight, rook, queen and king 
-  P, B, N, R, Q, K
+  BP, BB, BN, BR, BQ, BK
 }
 
-struct Board(Vec<Vec<Option<Piece>>>)
+struct Board(Vec<Vec<Option<Piece>>>);
 
 let the_board_from_the_image = {
   use Piece::*;
-  vec![
-    vec![Some(R), None,    None,    Some(Q), Some(K), Some(B), None,    Some(R)],
-    vec![Some(P), Some(B), Some(P), Some(N), None,    Some(P), Some(P), Some(P)],
-    vec![None,    Some(P), None,    None,    None,    None,    None,    None   ],
-    vec![None,    None,    None,    Some(P), None,    None,    Some(b), None   ],
-    vec![None,    None,    None,    Some(p), None,    None,    None,    None   ],
-    vec![Some(p), None,    None,    None,    None,    Some(n), None,    None   ],
-    vec![None,    Some(p), Some(q), None,    Some(p), Some(p), Some(p), Some(p)],
-    vec![Some(r), None,    None,    None,    Some(k), Some(b), None,    Some(r)],
-  ];
-}
+  Board(vec![
+    vec![Some(BR), None,     None,     Some(BQ), Some(BK), Some(BB), None,     Some(BR)],
+    vec![Some(BP), Some(BB), Some(BP), Some(BN), None,     Some(BP), Some(BP), Some(BP)],
+    vec![None,     Some(BP), None,     None,     None,     None,     None,     None   ],
+    vec![None,     None,     None,     Some(BP), None,     None,     Some(WB), None   ],
+    vec![None,     None,     None,     Some(WP), None,     None,     None,     None   ],
+    vec![Some(WP), None,     None,     None,     None,     Some(WN), None,     None   ],
+    vec![None,     Some(WP), Some(WQ), None,     Some(WP), Some(WP), Some(WP), Some(WP)],
+    vec![Some(WR), None,     None,     None,     Some(WK), Some(WB), None,     Some(WR)],
+  ])
+};
 ```
 How could we synchronize a game of chess between players playing online? A naive approach would be to just have a server recieve moves from each player, calculate a new Board based on that move and then send this new Board to both players. That would work, and honestly you could probably make a game with that approach as long as the size of the games state, ie. the Board struct, isn't too large.
 
 A more efficient, and frankly straight up cooler, solution is to just have the server send the *move the player performs* rather than the state. Because *the game state can be determined from a sequence of actions*, the players themselves can determine the most recent board. This way the messages between the server and players become something like `GameEvent::MovePiece { piece: Piece::Rook, position: "a4" }` rather than `*entire board with all the pieces*`, which almost always is way smaller!
 
 In fact, this approach of thinking about a game state as a *sequence of actions* is so useful that it was [adobted by chess players](https://en.wikipedia.org/wiki/Algebraic_notation_(chess)) to describe a game of chess around 1847(!). This was of course way before the internet, so the reduced bandwidth usage might not have been too intresting to these guys. Although one can imagine the painstaking task of drawing each board of a game of chess, if you were writing a book trying to explain your favorite openings. The image shown above is from a game between Garry Kasparov and Anatoly Karpov and that entire game can be decribed by these moves (*cheffs kiss ~ mwaaah*)
-```
+```text
 1. d4 Nf6 2. c4 e6 3. Nf3 b6 4. Nc3 Bb7 5. a3 d5 6. cxd5 Nxd5 7. Qc2 Nd7 8. Nxd5
 exd5 9. Bg5 f6 10. Bf4 c5 11. g3 g6 12. h4 Qe7 13. Bg2 Bg7 14. h5 f5 15. Qd2 Bf6
 16. Rc1 Rc8 17. Rc3 Rc6 18. Re3 Re6 19. Rxe6 Qxe6 20. Ng5 Qe7 21. dxc5 Nxc5 22.
@@ -89,13 +88,64 @@ So the game will progress like this:
 
 Here's a visual representation for those of us that, like me, learn best when there's nice colors involved:
 
-TODO: GIF GOES HERE
+![An illustration of how the game progresses](../images/update-state.gif)
 
 Now lets look at how we could implement the reducer pattern in rust!
 
 ## How do we write a reducer in Rust?
-Get into the reducer pattern and emphasize how it fits turn based games. Get into specific pros of this approach. Mention when not to use this pattern 
+If we were 
 
+```rust
+use std::collections::HashMap;
+
+pub struct GameState {
+    players: HashMap<u64, String>,
+    history: Vec<GameEvent>,
+}
+
+#[derive(Clone)]
+pub enum GameEvent {
+    PlayerJoined { player_id: u64, name: String },
+}
+
+impl GameEvent {
+    /// Determines if the event is valid on a particular gamestate
+    pub fn is_valid_on(&self, game_state: &GameState) -> bool {
+        use GameEvent::*;
+        match self {
+            PlayerJoined { player_id, name: _ } => {
+                if game_state.players.contains_key(player_id) {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
+}
+
+impl GameState {
+    /// Aggregates an event into the GameState. 
+    /// Note that the event is assumed to be valid when reduce is called
+    fn reduce(&mut self, valid_event: &GameEvent) {
+        use GameEvent::*;
+        match valid_event {
+            PlayerJoined { player_id, name } => {
+                self.players.insert(*player_id, name.to_string());
+            }
+        }
+
+        self.history.push(event.clone());
+    }
+
+    /// Dispatches an event, modifying the GameState
+    pub fn dispatch(&mut self, event: &GameEvent) {
+        if event.is_valid_on(&self) {
+            self.reduce(event);
+        }
+    }
+}
+```
 
 ## What's next?
 That's it for this post. In the next one, we will setup a Rust workspace, write the server for our game and adapt our gamestate implementation into a library that the server can use. You can already [read part 2 here](TODO) 🕺

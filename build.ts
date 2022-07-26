@@ -133,9 +133,9 @@ const render = (template: string, parsed: Page) =>
   template
     .replaceAll("{{META}}", render_meta(parsed))
     .replaceAll("{{TITLE}}", parsed.meta.title)
-    .replaceAll("{{CONTENT}}", parsed.content)
     .replaceAll("{{TAGS}}", render_tags(parsed.meta.tags))
-    .replaceAll("{{PUBLIC}}", parsed.public_path);
+    .replaceAll("{{PUBLIC}}", parsed.public_path)
+    .replaceAll("{{CONTENT}}", parsed.content);
 
 ///////// SITE GENERATION /////////
 // Read and parse all posts in content folder

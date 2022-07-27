@@ -226,7 +226,7 @@ fn main() {
 Awesome! Now we have something that both the players and the server could use to make sure they have the same state when sending around `GameEvent`s to each other ✨ 
 
 ## What's next?
-In the next one, we will first setup a Rust workspace to make it easy to share code between the server and client. Then we will adapt our `GameState` implementation into a library that the server can use and finally we will write a working server using the (renet crate)[https://crates.io/crates/renet]. 
+In the next one, we will first setup a Rust workspace to make it easy to share code between the server and client. Then we will adapt our `GameState` implementation into a library that the server can use and finally we will write a working server using the [renet crate](https://crates.io/crates/renet). 
 
 You can already [read part 2 here](https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server) 🕺
 

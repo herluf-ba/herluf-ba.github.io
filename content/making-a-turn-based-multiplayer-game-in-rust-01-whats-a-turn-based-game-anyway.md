@@ -205,8 +205,9 @@ impl GameState {
         self.history.push(event.clone());
     }
     
-    /// It's very common to have a dispatch function like this to do things like validation and logging
+    /// Dispatches an event if it is valid on the current GameState
     pub fn dispatch(&mut self, event: &GameEvent) -> bool {
+        // It's very common to have a dispatch function like this to do things like validation and logging
         let is_valid = event.is_valid_on(&self);
         if is_valid {
             self.reduce(event);

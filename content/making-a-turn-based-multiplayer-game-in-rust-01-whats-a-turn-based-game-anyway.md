@@ -173,24 +173,6 @@ pub enum GameEvent {
     PlayerJoined { player_id: PlayerId, name: String },
 }
 
-impl GameEvent {
-    /// Determines if the event is valid considering a specific gamestate
-    pub fn is_valid_on(&self, game_state: &GameState) -> bool {
-        use GameEvent::*;
-        // In this match statement we try our best to invalidate the event
-        match self {
-            PlayerJoined { player_id, name: _ } => {
-                if game_state.players.contains_key(player_id) {
-                    return false;
-                }
-            }
-        }
-        
-        // If we can't find something thats wrong with the event then it must be ok
-        true
-    }
-}
-
 impl GameState {
     /// Aggregates an event into the GameState. 
     /// Note that the event is assumed to be valid when passed to reduce
@@ -202,27 +184,45 @@ impl GameState {
             }
         }
 
-        self.history.push(event.clone());
+        self.history.push(valid_event.clone());
+    }
+
+    /// Determines if the event is valid on the current GameState
+    pub fn validate(&self, event: &GameEvent) -> bool {
+        use GameEvent::*;
+        // In this match statement we try our best to invalidate the event
+        match event {
+            PlayerJoined { player_id, name: _ } => {
+                if self.players.contains_key(player_id) {
+                    return false;
+                }
+            }
+        }
+        
+        // If we can't find something thats wrong with the event then it must be ok
+        true
     }
     
-    /// Dispatches an event if it is valid on the current GameState
-    pub fn dispatch(&mut self, event: &GameEvent) -> bool {
+    /// Tries to dispatch an event on the current GameState
+    pub fn dispatch(&mut self, event: &GameEvent) -> Result<(), ()> {
         // It's very common to have a dispatch function like this to do things like validation and logging
-        let is_valid = event.is_valid_on(&self);
-        if is_valid {
-            self.reduce(event);
+        if !self.validate(&event) {
+            return Err(());
         }
-        is_valid
+
+        self.reduce(event);
+        Ok(())        
     }
 }
 
 fn main() {
-  let mut game_state = GameState::default();
-  let event = GameEvent::PlayerJoined { player_id: 1234, name: "Garry K.".to_string() };
-  let was_dispatched_1 = game_state.dispatch(&event); // <-- 👍 This is accepted like before
-  let was_dispatched_2 = game_State.dispatch(&event); // <-- 🙅‍♂️ This one is rejected since the same player can't join twice!
+    let mut game_state = GameState::default();
+    let event = GameEvent::PlayerJoined { player_id: 1234, name: "Garry K.".to_string() };
+    game_state.dispatch(&event).unwrap(); // <-- 👍 This is accepted like before
+    game_state.dispatch(&event).unwrap(); // <-- 🙅‍♂️ This one is rejected since the same player can't join twice!
 }
 ```
+
 
 ## What's next?
 That's it for this post. In the next one, we will setup a Rust workspace, write the server for our game and adapt our gamestate implementation into a library that the server can use. You can already [read part 2 here](TODO) 🕺

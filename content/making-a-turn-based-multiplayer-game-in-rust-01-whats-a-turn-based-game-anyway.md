@@ -93,25 +93,91 @@ Here's a visual representation for those of us that, like me, learn best when th
 Now lets look at how we could implement the reducer pattern in rust!
 
 ## How do we write a reducer in Rust?
-If we were 
-
+Let's start with something very simple to build upon:
 ```rust
 use std::collections::HashMap;
 
+type PlayerId = u64;
+
+#[derive(Default)]
 pub struct GameState {
-    players: HashMap<u64, String>,
+    // Storing players in a map makes it easy too look them up by id. For now we just store the player name.
+    pub players: HashMap<PlayerId, String>,
+    // This is all the events that have been added to this state (What we have been calling the "sequence of events")
+    // Useful for undo/redo, but also for debugging!
+    history: Vec<GameEvent>,
+}
+
+// For now we will just have a single event type: A PlayerJoined event.
+#[derive(Clone)]
+pub enum GameEvent {
+    PlayerJoined { player_id: PlayerId, name: String },
+}
+
+fn main() {
+  let game_state = GameState::default();
+}
+```
+
+Okay, that's good but right now we can really only initialize `GameState`s. We should add a way to interact with them. Lets add the reduce function!
+```rust
+use std::collections::HashMap;
+
+type PlayerId = u64;
+
+#[derive(Default)]
+pub struct GameState {
+    pub players: HashMap<PlayerId, String>,
     history: Vec<GameEvent>,
 }
 
 #[derive(Clone)]
 pub enum GameEvent {
-    PlayerJoined { player_id: u64, name: String },
+    PlayerJoined { player_id: PlayerId, name: String },
+}
+
+impl GameState {
+    /// Aggregates an event into the GameState. 
+    pub fn reduce(&mut self, event: &GameEvent) {
+        use GameEvent::*;
+        match event {
+            PlayerJoined { player_id, name } => {
+                self.players.insert(*player_id, name.to_string());
+            }
+        }
+
+        self.history.push(event.clone());
+    }
+}
+
+fn main() {
+  let mut game_state = GameState::default();
+  let event = GameEvent::PlayerJoined { player_id: 1234, name: "Gary K.".to_string() };
+  game_state.reduce(&event);
+}
+```
+That's nice, we now have a way to add events to the `GameState` 👌 An issue we still haven't adressed is validating events before adding them blindly to the `GameState`. We could do that like this:
+```rust
+use std::collections::HashMap;
+
+type PlayerId = u64;
+
+#[derive(Default)]
+pub struct GameState {
+    pub players: HashMap<PlayerId, String>,
+    history: Vec<GameEvent>,
+}
+
+#[derive(Clone)]
+pub enum GameEvent {
+    PlayerJoined { player_id: PlayerId, name: String },
 }
 
 impl GameEvent {
-    /// Determines if the event is valid on a particular gamestate
+    /// Determines if the event is valid considering a specific gamestate
     pub fn is_valid_on(&self, game_state: &GameState) -> bool {
         use GameEvent::*;
+        // In this match statement we try our best to invalidate the event
         match self {
             PlayerJoined { player_id, name: _ } => {
                 if game_state.players.contains_key(player_id) {
@@ -119,14 +185,15 @@ impl GameEvent {
                 }
             }
         }
-
+        
+        // If we can't find something thats wrong with the event then it must be ok
         true
     }
 }
 
 impl GameState {
     /// Aggregates an event into the GameState. 
-    /// Note that the event is assumed to be valid when reduce is called
+    /// Note that the event is assumed to be valid when passed to reduce
     fn reduce(&mut self, valid_event: &GameEvent) {
         use GameEvent::*;
         match valid_event {
@@ -137,13 +204,20 @@ impl GameState {
 
         self.history.push(event.clone());
     }
-
-    /// Dispatches an event, modifying the GameState
+    
+    /// It's very common to have a dispatch function like this
     pub fn dispatch(&mut self, event: &GameEvent) {
         if event.is_valid_on(&self) {
             self.reduce(event);
         }
     }
+}
+
+fn main() {
+  let mut game_state = GameState::default();
+  let event = GameEvent::PlayerJoined { player_id: 1234, name: "Gary K.".to_string() };
+  game_state.dispatch(&event); // <-- 👍 This is accepted like before
+  game_State.dispatch(&event); // <-- 🙅‍♂️ This one is rejected since the same player can't join twice!
 }
 ```
 

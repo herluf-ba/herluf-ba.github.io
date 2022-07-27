@@ -115,11 +115,12 @@ pub enum GameEvent {
 }
 
 fn main() {
-  let game_state = GameState::default();
+    let game_state = GameState::default();
+    let event = GameEvent::PlayerJoined { player_id: 1234, name: "Garry K.".to_string() };
 }
 ```
 
-Okay, that's good but right now we can really only initialize `GameState`s. We should add a way to interact with them. Lets add the reduce function!
+Okay, that's good but right now we can really only initialize `GameState`s and `GameEvents`. We should add a way to make them interact with eachother. Lets add the reduce function!
 ```rust
 use std::collections::HashMap;
 
@@ -151,9 +152,9 @@ impl GameState {
 }
 
 fn main() {
-  let mut game_state = GameState::default();
-  let event = GameEvent::PlayerJoined { player_id: 1234, name: "Garry K.".to_string() };
-  game_state.reduce(&event);
+    let mut game_state = GameState::default();
+    let event = GameEvent::PlayerJoined { player_id: 1234, name: "Garry K.".to_string() };
+    game_state.reduce(&event);
 }
 ```
 That's nice, we now have a way to add events to the `GameState` 👌 An issue we still haven't adressed is validating events before adding them blindly to the `GameState`. We could do that like this:

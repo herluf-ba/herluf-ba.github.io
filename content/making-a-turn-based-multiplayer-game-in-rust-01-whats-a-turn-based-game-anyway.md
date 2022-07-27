@@ -152,7 +152,7 @@ impl GameState {
 
 fn main() {
   let mut game_state = GameState::default();
-  let event = GameEvent::PlayerJoined { player_id: 1234, name: "Gary K.".to_string() };
+  let event = GameEvent::PlayerJoined { player_id: 1234, name: "Garry K.".to_string() };
   game_state.reduce(&event);
 }
 ```
@@ -218,7 +218,7 @@ impl GameState {
 
 fn main() {
   let mut game_state = GameState::default();
-  let event = GameEvent::PlayerJoined { player_id: 1234, name: "Gary K.".to_string() };
+  let event = GameEvent::PlayerJoined { player_id: 1234, name: "Garry K.".to_string() };
   game_state.dispatch(&event); // <-- 👍 This is accepted like before
   game_State.dispatch(&event); // <-- 🙅‍♂️ This one is rejected since the same player can't join twice!
 }

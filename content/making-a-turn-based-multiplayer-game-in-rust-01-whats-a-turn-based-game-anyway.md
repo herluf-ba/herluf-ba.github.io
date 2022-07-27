@@ -1,13 +1,13 @@
 ---
 title : Making a turn based multiplayer game in Rust - What's a turn based game anyway? (part 1/3)
-description : 'A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 1/3 which goes into what charaterizes a turn based game and presents a pattern for synchronizing states between players.'
+description : 'A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 1 of 3 which goes into what charaterizes a turn based game and presents a pattern for synchronizing states between players.'
 publishedAt: '2022-07-26T12:00:00Z'
 tags: 
   - rust
   - gamedev
 ---
 
-> This is part 1/3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. This post descripes what we are trying to achieve, and presents a way to design our code to support that. In the [second post](TODO) we will write the server and game-logic and in the [third and final post](TODO) we will write a client for the game using the awesome Bevy game engine.
+> This is part 1 of 3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. This post descripes what we are trying to achieve, and presents a way to design our code to support that. In the [second post](https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server) we will write the server and game-logic and in the [third and final post](https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-03-writing-a-client-using-bevy) we will write a client for the game using the awesome Bevy game engine.
 
 Welcome! I am currently working on a casual online card game called Habitat. For this, I have had to think long and hard about how I wanted to approach networking in my game, and I think I have come up with a pretty solid solution (famous last words). So, for the good of all of us, I have decided to describe this solution in a tutorial series! 
 
@@ -204,9 +204,9 @@ impl GameState {
         true
     }
     
-    /// Tries to dispatch an event on the current GameState
+    /// Tries to consume an event by first validating it
     pub fn dispatch(&mut self, event: &GameEvent) -> Result<(), ()> {
-        // It's very common to have a dispatch function like this to do things like validation and logging
+        // It's very common to have a "dispatching" function like this to do things like validation and logging
         if !self.validate(&event) {
             return Err(());
         }
@@ -223,9 +223,11 @@ fn main() {
     game_state.dispatch(&event).unwrap(); // <-- 🙅‍♂️ This one is rejected since the same player can't join twice!
 }
 ```
-
+Awesome! Now we have something that both the players and the server could use to make sure they have the same state when sending around `GameEvent`s to each other ✨ 
 
 ## What's next?
-That's it for this post. In the next one, we will setup a Rust workspace, write the server for our game and adapt our gamestate implementation into a library that the server can use. You can already [read part 2 here](TODO) 🕺
+In the next one, we will first setup a Rust workspace to make it easy to share code between the server and client. Then we will adapt our `GameState` implementation into a library that the server can use and finally we will write a working server using the (renet crate)[https://crates.io/crates/renet]. 
 
-Thank you for reading! If you see something that's wrong, I would appreciate it very much if you would [make a pull request](TODO). If you want to talk to me [I'd love to receive an email](mailto:herlufbaggesen13@gmail.com), but I'm also sporatically active on the [Bevy Discord](https://discord.gg/bevy)
+You can already [read part 2 here](https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server) 🕺
+
+Thank you for reading! If you see something that's wrong, I would appreciate it very much if you would [make a pull request](https://github.com/herluf-ba/herluf-ba.github.io/pulls). If you want to talk to me [I'd love to receive an email](mailto:herlufbaggesen13@gmail.com), but I'm also sporatically active on the [Bevy Discord](https://discord.gg/bevy)

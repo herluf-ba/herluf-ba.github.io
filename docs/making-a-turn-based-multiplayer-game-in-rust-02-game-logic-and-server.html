@@ -17,16 +17,16 @@
     
 <title>Making a turn based multiplayer game in Rust - Game logic and server (part 2/3)</title>
 <meta name="title" content="Making a turn based multiplayer game in Rust - Game logic and server (part 2/3)">
-<meta name="description" content="A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 2/3 which goes TODO">
+<meta name="description" content="A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 2 of 3 where we will use the reducer pattern that was introduced in the previous post, to write a server for our game">
 <meta property="og:type" content="website">
 <meta property="og:url" content="herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server.html">
 <meta property="og:title" content="Making a turn based multiplayer game in Rust - Game logic and server (part 2/3)">
-<meta property="og:description" content="A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 2/3 which goes TODO">
+<meta property="og:description" content="A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 2 of 3 where we will use the reducer pattern that was introduced in the previous post, to write a server for our game">
 <meta property="og:image" content="/images/herluf.webp">
 <meta property="twitter:card" content="description_large_image">
 <meta property="twitter:url" content="herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server.html">
 <meta property="twitter:title" content="Making a turn based multiplayer game in Rust - Game logic and server (part 2/3)">
-<meta property="twitter:description" content="A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 2/3 which goes TODO">
+<meta property="twitter:description" content="A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 2 of 3 where we will use the reducer pattern that was introduced in the previous post, to write a server for our game">
 <meta property="twitter:image" content="/images/herluf.webp">
 
   </head>
@@ -74,11 +74,36 @@
     <main>
       <h1>Making a turn based multiplayer game in Rust - Game logic and server (part 2/3)</h1>
       <blockquote>
-<p>This is part 2/3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. This post descripes what we are trying to achieve, and presents a way to design our code to support that. In the <a href="TODO">first post</a> TODO and in the <a href="TODO">third and final post</a> we will write a client for the game using the awesome Bevy game engine.</p>
+<p>This is part 2 of 3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. In this post we will use the reducer pattern that was introduced in the <a href="https://herluf-ba/herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-01-whats-a-turn-based-game-anyway">previous post</a>, to write a server for our game. In the <a href="https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-03-writing-a-client-using-bevy">third and final post</a> we will write a client for the game using the awesome Bevy game engine.</p>
 </blockquote>
+<p>Welcome back! 👋 In this post we will use the reducer pattern to write our game server. Let&#39;s just get started right away!</p>
+<h2 id="a-good-starting-point">A good starting point</h2>
+<p>To get straight into the intresting bits of the project I&#39;ve prepared a template for us to use. It sits in a branch of the tic-tac-tussle respository, so it&#39;s easy to clone like this:</p>
+
+<pre><code class="lang-bash">git clone -b template https://github.com/herluf-ba/tic-tac-tussle.git
+# Or however you like to do your clonin&#39; (you can use the zip-download, I won&#39;t judge 👀)
+</code></pre>
+<p>The template is a <a href="https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html">cargo workspace</a> with two binaries <code>client</code> and <code>server</code> and a library they both use called <code>store</code>. All three has a <code>Cargo.toml</code> file with the necessary dependencies already added to them as well as an empty <code>src/[main/lib].rs</code>. The <code>client</code> also has some assets for us to use, once we get around to writing that in the next post.</p>
+
+<pre><code class="lang-text">tic-tac-tussle/
+├── client/
+|   ├── Cargo.toml
+|   ├── assets/*
+|   ├── src/
+|   |   ├── main.rs
+├── server/
+|   ├── Cargo.toml
+|   ├── src/
+|   |   ├── main.rs
+├── store/
+|   ├── Cargo.toml
+|   ├── src/
+|   |   ├── lib.rs
+</code></pre>
 <h2 id="what-s-next-">What&#39;s next?</h2>
-<p>That&#39;s it for this post. In the next one, we will setup a Rust workspace, write the server for our game and adapt our gamestate implementation into a library that the server can use. You can already <a href="TODO">read part 3 here</a> 🕺</p>
-<p>Thank you for reading! If you see something that&#39;s wrong, I would appreciate it very much if you would <a href="TODO">make a pull request</a>. If you want to talk to me <a href="mailto:herlufbaggesen13@gmail.com">I&#39;d love to receive an email</a>, but I&#39;m also sporatically active on the <a href="https://discord.gg/bevy">Bevy Discord</a></p>
+<p>That&#39;s it for this post. In the next one, we will write a client application using the <a href="https://bevyengine.org/">Bevy game engine</a> so we can finally play a round of TicTacTussle! </p>
+<p>You can already <a href="https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-03-writing-a-client-using-bevy">read part 3 here</a> 🕺</p>
+<p>Thank you for reading! If you see something that&#39;s wrong, I would appreciate it very much if you would <a href="https://github.com/herluf-ba/herluf-ba.github.io/pulls">make a pull request</a>. If you want to talk to me <a href="mailto:herlufbaggesen13@gmail.com">I&#39;d love to receive an email</a>, but I&#39;m also sporatically active on the <a href="https://discord.gg/bevy">Bevy Discord</a></p>
 
     </main>
 

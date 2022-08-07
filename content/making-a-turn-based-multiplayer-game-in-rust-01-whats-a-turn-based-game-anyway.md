@@ -1,13 +1,13 @@
 ---
 title : Making a turn-based multiplayer game in Rust - What's a turn-based game anyway? (part 1/3)
-description : 'A tutorial series about writing turn-based multiplayer games using Rust and the Bevy game engine. This part 1/3 goes into what characterizes a turn-based game and presents a pattern for synchronizing states between players.'
+description : 'A tutorial series about writing turn-based multiplayer games using Rust and the Bevy game engine. This part 1 of 3 goes into what characterizes a turn-based game and presents a pattern for synchronizing states between players.'
 publishedAt: '2022-07-26T12:00:00Z'
 tags: 
   - rust
   - gamedev
 ---
 
-> This is part 1/3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. This post describes what we are trying to achieve, and presents a way to design our code to support that. In the [second post](TODO) we will write the server and game-logic and in the [third and final post](TODO) we will write a client for the game using the awesome Bevy game engine.
+> This is part 1 of 3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. This post descripes what we are trying to achieve, and presents a way to design our code to support that. In the [second post](https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server) we will write the server and game-logic and in the [third and final post](https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-03-writing-a-client-using-bevy) we will write a client for the game using the awesome Bevy game engine.
 
 Welcome! I am currently working on a casual online card game called Habitat. For this, I have had to think long and hard about how I wanted to approach networking in my game, and I think I have come up with a pretty solid solution (famous last words). So, for the good of all of us, I have decided to describe this solution in a tutorial series! 
 
@@ -70,7 +70,7 @@ Some other less obvious consequences of thinking about game states as sequences 
 Now that we have established "turn-based games" as games that can be thought of as a *sequence of actions*, let's start thinking about how to design our code around this.
 
 ## A pattern for online turn-based games
-The overall problem we are trying to solve is to have the server and the players agree on the state of the game. One solution to this problem is to use the incredibly useful **reducer pattern, sometimes referred to as the "event pattern" or the ["command pattern"](https://gameprogrammingpatterns.com/command.html). At its core it's super simple: 
+The overall problem we are trying to solve is to have the server and the players agree on the state of the game. One solution to this problem is to use the incredibly useful **reducer** pattern, sometimes referred to as the "event pattern" or the ["command pattern"](https://gameprogrammingpatterns.com/command.html). At its core it's super simple: 
 
 **A *reducer* is a function that takes a state and an event and produces a new state**
 
@@ -93,40 +93,98 @@ Here's a visual representation for those of us that, like me, learn best when th
 Now let's look at how we could implement the reducer pattern in rust!
 
 ## How do we write a reducer in Rust?
-If we were 
-
+Let's start with something very simple to build upon:
 ```rust
 use std::collections::HashMap;
 
+type PlayerId = u64;
+
+#[derive(Default)]
 pub struct GameState {
-    players: HashMap<u64, String>,
+    // Storing players in a map makes it easy too look them up by id. 
+    // For now we just store the player name.
+    pub players: HashMap<PlayerId, String>,
+    // This is all the events that have been added to this state 
+    // (What we have been calling the "sequence of events")
+    // Useful for undo/redo, but also for debugging!
+    history: Vec<GameEvent>,
+}
+
+// For now we will just have a single event type: A PlayerJoined event.
+#[derive(Clone)]
+pub enum GameEvent {
+    PlayerJoined { player_id: PlayerId, name: String },
+}
+
+fn main() {
+    let game_state = GameState::default();
+    let event = GameEvent::PlayerJoined { 
+        player_id: 1234, 
+        name: "Garry K.".to_string() 
+    };
+}
+```
+
+Okay, that's good but right now we can really only initialize `GameState`s and `GameEvents`. We should add a way to make them interact with each other. Let's add the reduce function!
+```rust
+use std::collections::HashMap;
+
+type PlayerId = u64;
+
+#[derive(Default)]
+pub struct GameState {
+    pub players: HashMap<PlayerId, String>,
     history: Vec<GameEvent>,
 }
 
 #[derive(Clone)]
 pub enum GameEvent {
-    PlayerJoined { player_id: u64, name: String },
-}
-
-impl GameEvent {
-    /// Determines if the event is valid on a particular gamestate
-    pub fn is_valid_on(&self, game_state: &GameState) -> bool {
-        use GameEvent::*;
-        match self {
-            PlayerJoined { player_id, name: _ } => {
-                if game_state.players.contains_key(player_id) {
-                    return false;
-                }
-            }
-        }
-
-        true
-    }
+    PlayerJoined { player_id: PlayerId, name: String },
 }
 
 impl GameState {
     /// Aggregates an event into the GameState. 
-    /// Note that the event is assumed to be valid when reduce is called
+    pub fn reduce(&mut self, event: &GameEvent) {
+        use GameEvent::*;
+        match event {
+            PlayerJoined { player_id, name } => {
+                self.players.insert(*player_id, name.to_string());
+            }
+        }
+
+        self.history.push(event.clone());
+    }
+}
+
+fn main() {
+    let mut game_state = GameState::default();
+    let event = GameEvent::PlayerJoined { 
+        player_id: 1234, 
+        name: "Garry K.".to_string() 
+    };
+    game_state.reduce(&event);
+}
+```
+That's nice, we now have a way to add events to the `GameState` 👌 An issue we still haven't adressed is validating events before adding them blindly to the `GameState`. We could do that like this:
+```rust
+use std::collections::HashMap;
+
+type PlayerId = u64;
+
+#[derive(Default)]
+pub struct GameState {
+    pub players: HashMap<PlayerId, String>,
+    history: Vec<GameEvent>,
+}
+
+#[derive(Clone)]
+pub enum GameEvent {
+    PlayerJoined { player_id: PlayerId, name: String },
+}
+
+impl GameState {
+    /// Aggregates an event into the GameState. 
+    /// Note that the event is assumed to be valid when passed to reduce
     fn reduce(&mut self, valid_event: &GameEvent) {
         use GameEvent::*;
         match valid_event {
@@ -135,19 +193,57 @@ impl GameState {
             }
         }
 
-        self.history.push(event.clone());
+        self.history.push(valid_event.clone());
     }
 
-    /// Dispatches an event, modifying the GameState
-    pub fn dispatch(&mut self, event: &GameEvent) {
-        if event.is_valid_on(&self) {
-            self.reduce(event);
+    /// Determines if the event is valid on the current GameState
+    pub fn validate(&self, event: &GameEvent) -> bool {
+        use GameEvent::*;
+        // In this match statement we try our best to invalidate the event
+        match event {
+            PlayerJoined { player_id, name: _ } => {
+                if self.players.contains_key(player_id) {
+                    return false;
+                }
+            }
         }
+        
+        // If we can't find something thats wrong 
+        // with the event then it must be ok
+        true
+    }
+    
+    /// Tries to consume an event by first validating it
+    pub fn dispatch(&mut self, event: &GameEvent) -> Result<(), ()> {
+        // It's very common to have a "dispatching" function 
+        // like this to do things like validation and logging
+        if !self.validate(&event) {
+            return Err(());
+        }
+
+        self.reduce(event);
+        Ok(())        
     }
 }
+
+fn main() {
+    let mut game_state = GameState::default();
+    let event = GameEvent::PlayerJoined { 
+        player_id: 1234, 
+        name: "Garry K.".to_string() 
+    };
+
+    // 👍 This is accepted like before
+    game_state.dispatch(&event).unwrap(); 
+    // 🙅‍♂️ This one is rejected since the same player can't join twice!
+    game_state.dispatch(&event).unwrap(); 
+}
 ```
+Awesome! Now we have something that both the players and the server could use to make sure they have the same state when sending around `GameEvent`s to each other ✨ 
 
 ## What's next?
-That's it for this post. In the next one, we will set up a Rust workspace, write the server for our game and adapt our game-state implementation into a library that the server can use. You can already [read part 2 here](TODO) 🕺
+In the next one, we will first set up a Rust workspace to make it easy to share code between the server and client. Then we will adapt our `GameState` implementation into a library that the server can use and finally we will write a working server using the [renet crate](https://crates.io/crates/renet). 
 
-Thank you for reading! If you see something that's wrong, I would appreciate it very much if you would [make a pull request](TODO). If you want to talk to me [I'd love to receive an email](mailto:herlufbaggesen13@gmail.com), but I'm also sporadically active on the [Bevy Discord](https://discord.gg/bevy)
+You can already [read part 2 here](https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server) 🕺
+
+Thank you for reading! If you see something that's wrong, I would appreciate it very much if you would [make a pull request](https://github.com/herluf-ba/herluf-ba.github.io/pulls). If you want to talk to me [I'd love to receive an email](mailto:herlufbaggesen13@gmail.com), but I'm also sporadically active on the [Bevy Discord](https://discord.gg/bevy)

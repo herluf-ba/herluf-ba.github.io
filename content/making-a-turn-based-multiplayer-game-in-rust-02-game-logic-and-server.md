@@ -1,7 +1,7 @@
 ---
 title : Making a turn-based multiplayer game in Rust - Game logic and server (part 2/3)
 description : 'A tutorial series about writing turn-based multiplayer games using Rust and the Bevy game engine. This part 2 of 3 where we will use the reducer pattern that was introduced in the previous post, to write a server for our game'
-publishedAt: '2022-07-26T13:00:00Z'
+publishedAt: '2022-09-03T13:00:00Z'
 tags: 
   - rust
   - gamedev

@@ -82,7 +82,7 @@
 <h2 id="what-games-are-turn-based-">What games are &quot;turn-based&quot;?</h2>
 <p>Turn-based games are games where a group of players plays the game by performing a <em>sequence of actions</em> that advance the game. Usually, only a single player has the ability to perform actions at a time. We can think of a <em>turn</em> as a group of one or more actions that, once performed, hands over the privilege of performing actions from one player to another. A large group of games that fit this description is of course board games, like Monopoly, Uno or a favorite of mine <a href="https://www.daysofwonder.com/tickettoride/en/usa/">Ticket to Ride</a>. </p>
 <p>A very important trait of what we will call &quot;turn-based&quot; is that <strong>the state of the game can be determined solely from a sequence of actions</strong>. This trait has some nice consequences that we will be exploiting once we start writing code. To get familiar with these derived consequences, let&#39;s consider an example from one of the OG turn-based games: Chess ♟</p>
-<p><img src="../images/chess-position.webp" alt="A position in a game of chess"></p>
+<p><img src="../images/turn-based/chess-position.webp" alt="A position in a game of chess"></p>
 <p>Let&#39;s say we wanted to save the state of the board in the picture above. Well that&#39;s fairly straightforward, we could just do something like</p>
 
 <pre><code class="lang-rust">enum Piece {
@@ -144,7 +144,7 @@ Qe3+ 35. Kf1 Qc1+ 36. Kg2 Qxa3 37. Qh5+ Kd7 38. Qg4+ Kc6 39. Qxd4 b5 40. g4 b4
 <li>Either someone has won or we go to 1. </li>
 </ol>
 <p>Here&#39;s a visual representation for those of us that, like me, learn best when there are nice colors involved:</p>
-<p><img src="../images/update-state.gif" alt="An illustration of how the game progresses"></p>
+<p><img src="../images/turn-based/update-state.gif" alt="An illustration of how the game progresses"></p>
 <p>Now let&#39;s look at how we could implement the reducer pattern in rust!</p>
 <h2 id="how-do-we-write-a-reducer-in-rust-">How do we write a reducer in Rust?</h2>
 <p>Let&#39;s start with something very simple to build upon:</p>
@@ -218,7 +218,7 @@ fn main() {
     game_state.reduce(&amp;event);
 }
 </code></pre>
-<p>That&#39;s nice, we now have a way to add events to the <code>GameState</code> 👌 An issue we still haven&#39;t adressed is validating events before adding them blindly to the <code>GameState</code>. We could do that like this:</p>
+<p>That&#39;s nice, we now have a way to add events to the <code>GameState</code> 👌 An issue we still haven&#39;t addressed is validating events before adding them blindly to the <code>GameState</code>. We could do that like this:</p>
 
 <pre><code class="lang-rust">use std::collections::HashMap;
 

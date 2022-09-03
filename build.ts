@@ -6,6 +6,7 @@ import { ensureFile } from "https://deno.land/std@0.54.0/fs/ensure_file.ts";
 // deno run --allow-read --allow-write build.ts
 // To compress images run:
 // for file in ${OUT_DIR}/images/*; do bin/cwebp "$file" -o "${file%.*}.webp"; done
+// for file in docs/images/*; do bin/cwebp "$file" -o "${file%.*}.webp"; done
 
 ///////// SETTINGS /////////
 const SITE_ROOT = "herluf-ba.github.io";

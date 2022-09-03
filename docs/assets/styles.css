@@ -56,15 +56,14 @@ a:visited {
 p,
 img,
 pre,
-blockquote,
-ul,
-ol {
+blockquote {
   margin-bottom: 32px;
 }
 
 ul,
 ol {
-  padding: 0 0 0 32px;
+  padding: 0 0 0 16px;
+  margin-bottom: 16px;
 }
 
 ul {
@@ -132,6 +131,7 @@ img {
 
 li {
   list-style-position: inside;
+  padding-bottom: 16px;
 }
 
 h1 {

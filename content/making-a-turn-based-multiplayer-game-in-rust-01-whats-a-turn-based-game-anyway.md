@@ -5,6 +5,7 @@ publishedAt: '2022-07-26T12:00:00Z'
 tags: 
   - rust
   - gamedev
+  - tutorial
 ---
 
 > This is part 1 of 3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. This post descripes what we are trying to achieve, and presents a way to design our code to support that. In the [second post](https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server) we will write the server and game-logic and in the [third and final post](https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-03-writing-a-client-using-bevy) we will write a client for the game using the awesome Bevy game engine.
@@ -20,7 +21,7 @@ Turn-based games are games where a group of players plays the game by performing
 
 A very important trait of what we will call "turn-based" is that **the state of the game can be determined solely from a sequence of actions**. This trait has some nice consequences that we will be exploiting once we start writing code. To get familiar with these derived consequences, let's consider an example from one of the OG turn-based games: Chess ♟
 
-![A position in a game of chess](../images/chess-position.webp)
+![A position in a game of chess](../images/turn-based/chess-position.webp)
 
 Let's say we wanted to save the state of the board in the picture above. Well that's fairly straightforward, we could just do something like
 ```rust
@@ -88,7 +89,7 @@ So the game will progress like this:
 
 Here's a visual representation for those of us that, like me, learn best when there are nice colors involved:
 
-![An illustration of how the game progresses](../images/update-state.gif)
+![An illustration of how the game progresses](../images/turn-based/update-state.gif)
 
 Now let's look at how we could implement the reducer pattern in rust!
 
@@ -165,7 +166,7 @@ fn main() {
     game_state.reduce(&event);
 }
 ```
-That's nice, we now have a way to add events to the `GameState` 👌 An issue we still haven't adressed is validating events before adding them blindly to the `GameState`. We could do that like this:
+That's nice, we now have a way to add events to the `GameState` 👌 An issue we still haven't addressed is validating events before adding them blindly to the `GameState`. We could do that like this:
 ```rust
 use std::collections::HashMap;
 

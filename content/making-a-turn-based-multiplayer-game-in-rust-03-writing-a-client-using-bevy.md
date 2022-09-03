@@ -1,7 +1,7 @@
 ---
 title : Making a turn based multiplayer game in Rust - Writing a client using Bevy (part 3/3)
-description : 'A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 3/3 which goes into TODO'
-publishedAt: '2022-07-26T14:00:00Z'
+description : 'A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 3/3 which goes into the details of how to integrate a bevy client with our game server'
+publishedAt: '2022-09-03T14:00:00Z'
 tags: 
   - rust
   - gamedev

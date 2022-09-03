@@ -1,7 +1,7 @@
 ---
 title : Making a turn-based multiplayer game in Rust - What's a turn-based game anyway? (part 1/3)
 description : 'A tutorial series about writing turn-based multiplayer games using Rust and the Bevy game engine. This part 1 of 3 goes into what characterizes a turn-based game and presents a pattern for synchronizing states between players.'
-publishedAt: '2022-07-26T12:00:00Z'
+publishedAt: '2022-09-03T12:00:00Z'
 tags: 
   - rust
   - gamedev

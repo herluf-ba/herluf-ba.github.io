@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inconsolata&family=Inter&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <link rel="stylesheet" href="./assets/prism.css" />
+
+    
+<title>Making a turn based multiplayer game in Rust - Writing a client using Bevy (part 3/3)</title>
+<meta name="title" content="Making a turn based multiplayer game in Rust - Writing a client using Bevy (part 3/3)">
+<meta name="description" content="A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 3/3 which goes into TODO">
+<meta property="og:type" content="website">
+<meta property="og:url" content="herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-03-writing-a-client-using-bevy.html">
+<meta property="og:title" content="Making a turn based multiplayer game in Rust - Writing a client using Bevy (part 3/3)">
+<meta property="og:description" content="A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 3/3 which goes into TODO">
+<meta property="og:image" content="/images/herluf.webp">
+<meta property="twitter:card" content="description_large_image">
+<meta property="twitter:url" content="herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-03-writing-a-client-using-bevy.html">
+<meta property="twitter:title" content="Making a turn based multiplayer game in Rust - Writing a client using Bevy (part 3/3)">
+<meta property="twitter:description" content="A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 3/3 which goes into TODO">
+<meta property="twitter:image" content="/images/herluf.webp">
+
+  </head>
+  <body>
+    <header>
+      <a href="/"> {HB} </a>
+
+      <div>
+        <button type="button" id="mode-toggle" onclick="toggleMode()">
+          <img
+            src="data:image/png;base64,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"
+            role="presentation"
+            style="pointer-events: none"
+            width="16"
+            height="16"
+          />
+          <img
+            src="data:image/png;base64,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"
+            role="presentation"
+            style="pointer-events: none"
+            width="16"
+            height="16"
+          />
+          <div id="mode-toggle-dot"></div>
+        </button>
+        <a aria-label="Github" href="https://github.com/herluf-ba">
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 32 32"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M15.9985 0.842105C7.16437 0.842105 0 7.99353 0 16.8158C0 23.8721 4.58406 29.8595 10.942 31.9727C11.7425 32.1188 12.0343 31.6256 12.0343 31.202C12.0343 30.8225 12.0205 29.8183 12.0126 28.4857C7.56218 29.4506 6.62317 26.3441 6.62317 26.3441C5.89534 24.4987 4.84632 24.0074 4.84632 24.0074C3.39361 23.017 4.95633 23.0366 4.95633 23.0366C6.56227 23.1494 7.40698 24.683 7.40698 24.683C8.83416 27.1237 11.1522 26.4187 12.0637 26.0097C12.2091 24.9782 12.6226 24.2741 13.0793 23.875C9.52663 23.471 5.79122 22.1012 5.79122 15.9804C5.79122 14.2359 6.41494 12.8111 7.43842 11.6943C7.27341 11.2903 6.72434 9.66637 7.59557 7.46693C7.59557 7.46693 8.93827 7.03742 11.995 9.10351C13.2709 8.74952 14.6401 8.57302 16.0005 8.56615C17.3599 8.57302 18.7281 8.74952 20.006 9.10351C23.0607 7.03742 24.4015 7.46693 24.4015 7.46693C25.2747 9.66637 24.7256 11.2903 24.5616 11.6943C25.587 12.8111 26.2058 14.2359 26.2058 15.9804C26.2058 22.1169 22.4645 23.4671 18.901 23.8623C19.4746 24.3555 19.9864 25.3302 19.9864 26.8207C19.9864 28.9554 19.9667 30.6783 19.9667 31.202C19.9667 31.6295 20.2555 32.1266 21.0668 31.9707C27.4199 29.8536 32 23.8711 32 16.8158C32 7.99353 24.8356 0.842105 15.9985 0.842105"
+              fill="#1B1817"
+            />
+          </svg>
+        </a>
+      </div>
+    </header>
+
+    <main>
+      <h1>Making a turn based multiplayer game in Rust - Writing a client using Bevy (part 3/3)</h1>
+      <blockquote>
+<p>This is part 3/3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. In the <a href="https://herluf-ba/herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-01-whats-a-turn-based-game-anyway">first post</a> we established what a turn based game is and introduced the reducer pattern. In the <a href="https://herluf-ba/herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server.html">second post</a> we broke ground on TicTacTussle by writing a game server using the <a href="https://crates.io/crates/renet">renet</a> crate. </p>
+</blockquote>
+<p>Welcome back! 👋 In this post we will write a client application for TicTacTussle using <a href="https://bevyengine.org/">bevy</a>. I&#39;ll be focusing on how to marry bevy with our networking strategy, so I won&#39;t be going into detail about how bevy works. Check out <a href="https://bevyengine.org/learn/book/introduction">the getting started guide</a> and also <a href="https://bevy-cheatbook.github.io/">the bevy cheatbook</a> for that 👍 As with last time, let&#39;s just get started right away!</p>
+<h2 id="connecting-our-bevy-app-to-our-game-server">Connecting our bevy app to our game server</h2>
+<p>First and foremost we should establish a connection between a &quot;hello world&quot; bevy app and our game server. Luckily we aren&#39;t starting from scratch here, as renet has a bevy client plugin called <code>bevy_renet</code> that we can use. A barebones bevy app that connects on startup looks something like this:</p>
+
+<pre><code class="lang-rust">// client/src/main.rs
+use bevy::prelude::*;
+use bevy_renet::RenetClientPlugin;
+use renet::{
+    ClientAuthentication, RenetClient, RenetConnectionConfig, RenetError, NETCODE_USER_DATA_BYTES,
+};
+use std::{net::UdpSocket, time::SystemTime};
+
+// This id needs to be the same as the server is using
+const PROTOCOL_ID: u64 = 1208;
+
+fn main() {
+    // Get username from stdin args
+    let args = std::env::args().collect::&lt;Vec&lt;String&gt;&gt;();
+    let username = &amp;args[1];
+
+    App::new()
+        .insert_resource(WindowDescriptor {
+            // Adding the username to the window title makes debugging a whole lot easier.
+            title: format!(&quot;TicTacTussle &lt;{}&gt;&quot;, username),
+            width: 480.0,
+            height: 540.0,
+            ..default()
+        })
+        // Lets add a nice dark grey background color
+        .insert_resource(ClearColor(Color::hex(&quot;282828&quot;).unwrap()))
+        .add_plugins(DefaultPlugins)
+        // Renet setup
+        .add_plugin(RenetClientPlugin)
+        .insert_resource(new_renet_client(&amp;username).unwrap())
+        .add_system(handle_renet_error)
+        .run();
+}
+
+////////// RENET NETWORKING //////////
+// Creates a RenetClient thats already connected to a server.
+// Returns an Err if connection fails
+fn new_renet_client(username: &amp;String) -&gt; anyhow::Result&lt;RenetClient&gt; {
+    let server_addr = &quot;127.0.0.1:5000&quot;.parse()?;
+    let socket = UdpSocket::bind(&quot;127.0.0.1:0&quot;)?;
+    let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
+    let client_id = current_time.as_millis() as u64;
+
+    // Place username in user data
+    let mut user_data = [0u8; NETCODE_USER_DATA_BYTES];
+    if username.len() &gt; NETCODE_USER_DATA_BYTES - 8 {
+        panic!(&quot;Username is too big&quot;);
+    }
+    user_data[0..8].copy_from_slice(&amp;(username.len() as u64).to_le_bytes());
+    user_data[8..username.len() + 8].copy_from_slice(username.as_bytes());
+
+    let client = RenetClient::new(
+        current_time,
+        socket,
+        client_id,
+        RenetConnectionConfig::default(),
+        ClientAuthentication::Unsecure {
+            client_id,
+            protocol_id: PROTOCOL_ID,
+            server_addr,
+            user_data: Some(user_data),
+        },
+    )?;
+
+    Ok(client)
+}
+
+// If there&#39;s any network error we just panic 🤷‍♂️
+// Ie. Client has lost connection to server, if internet is gone or server shut down etc.
+fn handle_renet_error(mut renet_error: EventReader&lt;RenetError&gt;) {
+    for err in renet_error.iter() {
+        panic!(&quot;{}&quot;, err);
+    }
+}
+</code></pre>
+<p>Now for something we have been putting off for a very long time: Running some code! Let&#39;s start our server and connect two clients 🎉</p>
+
+<pre><code class="lang-bash"># First we start the server, as the clients assume it&#39;s available when they start
+cargo run --bin server
+# In another terminal:
+cargo run --bin client Garry
+# In a third terminal:
+cargo run --bin client Anatoly
+
+# Or you could be run-and-gun and go:
+cargo run --bin server &amp; cargo run --bin client Garry &amp; cargo run --bin client Anatoly
+# It&#39;s a fun way to make the log unreadable!
+</code></pre>
+<p>You should see two empty windows popping up! Our game server should be logging out: </p>
+
+<pre><code class="lang-bash">cargo run --bin server
+  Finished dev [unoptimized + debuginfo] target(s) in 0.13s
+  Running `target/debug/server`
+[2022-08-25T07:41:47Z TRACE server] 🕹  TicTacTussle server listening on 127.0.0.1:5000
+[2022-08-25T07:41:50Z INFO  server] Client 1661413309885 connected.
+[2022-08-25T07:42:12Z INFO  server] Client 1661413332382 connected.
+[2022-08-25T07:42:12Z TRACE server] The game gas begun
+</code></pre>
+<p>Fantastic! ✨ Somehow, even though I have been connecting stuff on the internet for years now, I still get excited about that initial connect. There&#39;s just something about it!</p>
+<blockquote>
+<p>There&#39;s a gotcha here! To have enable logging we need to specify the &#39;log level&#39; of each of our projects so <code>env-logger</code> will actually log out stuff to the terminal. This is done via environment variables, so we could just go <code>RUST_LOG=server cargo run --bin server</code>. Once you get tired of having to remember that everytime you&#39;re confused about missing logs, you can specify the environment using <code>cargo</code> 👍 This is done by creating a file at <code>.cargo/config.toml</code> and adding <code>[env] RUST_LOG=&quot;server,client&quot;</code> to it.</p>
+</blockquote>
+<h2 id="spawning-a-game-board">Spawning a game board</h2>
+<p>Okay, landing our feet on the ground after the excitement of connecting clients to a server, we start looking at the next challenge to tackle. I reckon the game would be more fun for players if they weren&#39;t staring at a blank window 🤔 We should start adding some of the assets I&#39;ve prepared for us in <code>client/assets</code>. This is usually done in a <code>setup</code> function:</p>
+
+<pre><code class="lang-rust">fn main() {
+    // ...
+    App::new()
+        // ... 
+        // Add setup function to spawn UI and board graphics
+        .add_startup_system(setup)
+        .run();
+}
+
+////////// COMPONENTS //////////
+#[derive(Component)]
+struct UIRoot;
+
+#[derive(Component)]
+struct WaitingText;
+
+////////// SETUP //////////
+fn setup(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
+    // TicTacTussle is a 2D game
+    // To show 2D sprites we need a 2D camera 
+    commands.spawn_bundle(Camera2dBundle::default());
+
+    // Spawn board background
+    commands.spawn_bundle(SpriteBundle {
+        transform: Transform::from_xyz(0.0, -30.0, 0.0),
+        sprite: Sprite {
+            custom_size: Some(Vec2::new(480.0, 480.0)),
+            ..default()
+        },
+        texture: asset_server.load(&quot;background.png&quot;).into(),
+        ..default()
+    });
+
+    // Spawn pregame ui
+    commands
+        // A container that centers its children on the screen
+        .spawn_bundle(NodeBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                position: UiRect {
+                    left: Val::Px(0.0),
+                    top: Val::Px(0.0),
+                    ..default()
+                },
+                size: Size::new(Val::Percent(100.0), Val::Px(60.0)),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            color: Color::NONE.into(),
+            ..default()
+        })
+        .insert(UIRoot)
+        .with_children(|parent| {
+            parent
+                .spawn_bundle(TextBundle::from_section(
+                    &quot;Waiting for an opponent...&quot;,
+                    TextStyle {
+                        font: asset_server.load(&quot;Inconsolata.ttf&quot;),
+                        font_size: 24.0,
+                        color: Color::hex(&quot;ebdbb2&quot;).unwrap(),
+                    },
+                ))
+                .insert(WaitingText);
+        });
+}
+</code></pre>
+<p>You should end up with something like this:</p>
+<p><img src="../images/turn-based/client-pregame-ui.webp" alt="Pregame UI for tic tac tussle"></p>
+<p>Whenever the player has to wait for something I think it&#39;s important to add some indication that the game isn&#39;t just frozen 🥶 We can do that pretty easily by animating the three periods at the end of the text. </p>
+
+<pre><code class="lang-rust">fn main() {
+    // ...
+    App::new()
+        // ... 
+        .add_system(update_waiting_text)
+        .run();
+}
+
+////////// UPDATE SYSTEMS //////////
+fn update_waiting_text(mut text_query: Query&lt;&amp;mut Text, With&lt;WaitingText&gt;&gt;, time: Res&lt;Time&gt;) {
+    if let Ok(mut text) = text_query.get_single_mut() {
+        let num_dots = (time.time_since_startup().as_secs() % 3) + 1;
+        text.sections[0].value = format!(
+            &quot;Waiting for an opponent{}{}&quot;,
+            &quot;.&quot;.repeat(num_dots as usize),
+            // Pad with spaces to avoid text changing width and dancing all around the screen 🕺
+            &quot; &quot;.repeat(3 - num_dots as usize)
+        );
+    }
+}
+</code></pre>
+<h2 id="adding-input-">Adding input! 🕹</h2>
+<p>Pretty much any game I have ever played has had some form of player input so let&#39;s add that now! In tic tac toe inputs are manageable, there&#39;s literally only a single form of input we need to handle: Clicking on a tile to place a piece. </p>
+
+<pre><code class="lang-rust">fn main() {
+    // ...
+    App::new()
+        // ... 
+        .add_system(input)
+        .run();
+}
+
+////////// UPDATE SYSTEMS //////////
+// ...
+fn input(
+    windows: Res&lt;Windows&gt;,
+    input: Res&lt;Input&lt;MouseButton&gt;&gt;,
+    game_state: Res&lt;GameState&gt;,
+) {
+    let window = windows.get_primary().unwrap();
+    if let Some(mouse_position) = window.cursor_position() {
+        // Determine the index of the tile that the mouse is currently over
+        // NOTE: This calculation assumes a fixed window size. 
+        // That&#39;s fine for now, but consider using the windows size instead.
+        let x_tile: usize = (mouse_position.x / 160.0).floor() as usize;
+        let y_tile: usize = (mouse_position.y / 160.0).floor() as usize;
+        let tile = x_tile + y_tile * 3;
+
+        // If mouse is outside of board we do nothing
+        if 8 &lt; tile {
+            return;
+        }
+
+        // If left mouse button is pressed, send a place tile event to the server
+        if input.just_pressed(MouseButton::Left) {
+            info!(&quot;place piece at tile {:?}&quot;, tile);
+        }
+    }
+}
+</code></pre>
+<p>Nice! We are making progress with the client! There&#39;s one more addition I&#39;d like to make before we dive into the networking details and that&#39;s some hover effect when players hover a specific tile. It&#39;s just a small touch that makes the game feel a lot more polished in my opinion. I guess technically it&#39;s not necessary though, so feel free to skip to the next section if you are a busy fellow 🏃‍♀️</p>
+<p>The effect is very simple: In <code>setup</code> we spawn a dot in the center of each tile but set its opacity to 0 so it&#39;s completely see-through. Then, if we know the cursor is placed on top of a tile, we show the dot in that tile by setting the opacity to 1 ✨</p>
+
+<pre><code class="lang-rust">fn main() {
+    // ...
+    App::new()
+        // ... 
+        .add_system(input)
+        .run();
+}
+////////// COMPONENTS //////////
+// ...
+
+type TileIndex = usize;
+#[derive(Component)]
+struct HoverDot(pub TileIndex);
+
+////////// SETUP //////////
+fn setup(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
+    // ...
+
+    // Spawn a dot in each tile for hover effect
+    for x in 0..3 {
+        for y in 0..3 {
+            commands
+                .spawn_bundle(SpriteBundle {
+                    transform: Transform::from_xyz(
+                        160.0 * (x as f32 - 1.0),
+                        -30.0 + 160.0 * (y as f32 - 1.0),
+                        0.0,
+                    ),
+                    sprite: Sprite {
+                        color: Color::rgba(1.0, 1.0, 1.0, 0.0),
+                        custom_size: Some(Vec2::new(160.0, 160.0)),
+                        ..default()
+                    },
+                    texture: asset_server.load(&quot;dot.png&quot;).into(),
+                    ..default()
+                })
+                .insert(HoverDot(x + y * 3));
+        }
+    }
+}
+
+////////// UPDATE SYSTEMS //////////
+// ...
+fn input(
+    windows: Res&lt;Windows&gt;,
+    input: Res&lt;Input&lt;MouseButton&gt;&gt;,
+    game_state: Res&lt;GameState&gt;,
+    mut hover_dots: Query&lt;(&amp;HoverDot, &amp;mut Sprite)&gt;,
+) {
+    let window = windows.get_primary().unwrap();
+    if let Some(mouse_position) = window.cursor_position() {
+        // Determine the index of the tile that the mouse is currently over
+        // NOTE: This calculation assumes a fixed window size. 
+        // That&#39;s fine for now, but consider using the windows size instead.
+        let x_tile: usize = (mouse_position.x / 160.0).floor() as usize;
+        let y_tile: usize = (mouse_position.y / 160.0).floor() as usize;
+        let tile = x_tile + y_tile * 3;
+
+        // If mouse is outside of board we do nothing
+        if 8 &lt; tile {
+            return;
+        }
+
+        // Toggle hover dots on and off
+        for (dot, mut dot_sprite) in hover_dots.iter_mut() {
+            if dot.0 == tile {
+                dot_sprite.color.set_a(1.0);
+            } else {
+                dot_sprite.color.set_a(0.0);
+            }
+        }
+
+        // If left mouse button is pressed, send a place tile event to the server
+        if input.just_pressed(MouseButton::Left) {
+            info!(&quot;place piece at tile {:?}&quot;, tile);
+        }
+    }
+}
+</code></pre>
+<p>Now I think we can all agree that that&#39;s much nicer!</p>
+<p><img src="../images/turn-based/hover-effect.gif" alt="Hover effect that shows a dot when the cursor is over a tile"></p>
+<h2 id="sending-gameevents-">Sending <code>GameEvents</code></h2>
+<p>Now that we have all the scaffolding in place, it&#39;s time to send some <code>GameEvent</code>s 🚀!</p>
+
+<pre><code class="lang-rust">fn input(
+    windows: Res&lt;Windows&gt;,
+    input: Res&lt;Input&lt;MouseButton&gt;&gt;,
+    game_state: Res&lt;GameState&gt;,
+    mut hover_dots: Query&lt;(&amp;HoverDot, &amp;mut Sprite)&gt;,
+    mut client: ResMut&lt;RenetClient&gt;,
+) {
+    // 👇 NOTE THIS TOO
+    // We only want to handle inputs once we are ingame
+    if game_state.stage != store::Stage::InGame {
+        return;
+    }
+
+    let window = windows.get_primary().unwrap();
+    if let Some(mouse_position) = window.cursor_position() {
+        // ...
+
+        // If left mouse button is pressed, send a place tile event to the server
+        if input.just_pressed(MouseButton::Left) {
+           let event = GameEvent::PlaceTile {
+                player_id: client.client_id(),
+                at: tile,
+            };
+            client.send_message(0, bincode::serialize(&amp;event).unwrap());
+        }
+    }
+}
+</code></pre>
+<p>Well, that was easy! The <code>bevy-renet</code> plugin contains a system that will send off messages as part of the update loop, so there&#39;s nothing more for us to do sending-wise. However, you might recall that just sending the event to the server does nothing on the client-side. Stuff only happens once the server echoes back valid events to all clients! Let&#39;s have the client receive and consume <code>GameEvents</code>!</p>
+
+<pre><code class="lang-rust">fn main() {
+    // ...
+    App::new()
+        // ... 
+        .add_system_to_stage(
+            CoreStage::PostUpdate,
+            // Renet exposes a nice run criteria 
+            // that can be used to make sure that this system only runs when the client is connected
+            receive_events_from_server.with_run_criteria(run_if_client_connected),
+        )
+        .run();
+}
+
+////////// RENET NETWORKING //////////
+// ...
+fn receive_events_from_server(
+    mut client: ResMut&lt;RenetClient&gt;,
+    mut game_state: ResMut&lt;GameState&gt;,
+    mut game_events: EventWriter&lt;GameEvent&gt;,
+) {
+    while let Some(message) = client.receive_message(0) {
+        // Whenever the server sends a message we know that it must be a game event
+        let event: GameEvent = bincode::deserialize(&amp;message).unwrap();
+        trace!(&quot;{:#?}&quot;, event);
+
+        // We trust the server - It&#39;s always been good to us!
+        // No need to validate the events it is sending us
+        game_state.consume(&amp;event);
+
+        // Send the event into the bevy event system so systems can react to it
+        game_events.send(event);
+    }
+}
+</code></pre>
+<p>The game is now playable! If you start a server and connect two clients, you should start seeing event logs happening in the terminal. You can play all the way until a player emerges victorious! We have finally implemented the update loop that was introduced way back in the first post - Phew, well done! 🥇 </p>
+<p>There&#39;s just a itty-bitty problem: The client doesn&#39;t visually update the board, so it&#39;s really hard for our less tech-savvy players to follow along. Let&#39;s rectify that with another update system:</p>
+
+<pre><code class="lang-rust">fn main() {
+    // ...
+    App::new()
+        // ... 
+        .add_system(update_board)
+        .run();
+}
+
+////////// UPDATE SYSTEMS //////////
+// ...
+fn update_board(
+    mut commands: Commands,
+    game_state: Res&lt;GameState&gt;,
+    mut game_events: EventReader&lt;GameEvent&gt;,
+    asset_server: Res&lt;AssetServer&gt;,
+) {
+    for event in game_events.iter() {
+        match event {
+            GameEvent::PlaceTile { player_id, at } =&gt; {
+                let x = at % 3;
+                let y = at / 3;
+                let texture =
+                    asset_server.load(match game_state.get_player_tile(player_id).unwrap() {
+                        store::Tile::Tac =&gt; &quot;tac.png&quot;,
+                        store::Tile::Tic =&gt; &quot;tic.png&quot;,
+                        store::Tile::Empty =&gt; &quot;dot.png&quot;, // This should never happen
+                    });
+
+                commands.spawn_bundle(SpriteBundle {
+                    transform: Transform::from_xyz(
+                        160.0 * (x as f32 - 1.0),
+                        -30.0 + 160.0 * (y as f32 - 1.0),
+                        0.0,
+                    ),
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(160.0, 160.0)),
+                        ..default()
+                    },
+                    texture: texture.into(),
+                    ..default()
+                });
+            }
+            _ =&gt; {}
+        }
+    }
+}
+</code></pre>
+<p>And would you look at that; we got ourselves a working client application!</p>
+<p><img src="../images/turn-based/placing-tiles.gif" alt="Two players placing tiles on a game board with network synchronization"></p>
+<h2 id="adding-ui-">Adding UI 📊</h2>
+<p>The final piece to our game-loop is to add some state-aware UI. By that I mean, that we should have some UI telling players who have won when a game ends. It would also be nice to indicate which players turn it is and I guess we should at least do something to tell a player that their opponent has left and is not just taking their sweet time with their turn 🐢 Let&#39;s start tackling this by changing UI when <code>game_state.stage</code> changes:</p>
+
+<pre><code class="lang-rust">fn main() {
+    // ...
+    App::new()
+        // ... 
+        .add_system(change_ui_by_stage)
+        .run();
+}
+
+////////// COMPONENTS //////////
+// ...
+
+#[derive(Component)]
+struct PlayerHandle(pub u64);
+
+////////// UPDATE SYSTEMS //////////
+// ...
+fn change_ui_by_stage(
+    mut commands: Commands,
+    game_state: Res&lt;GameState&gt;,
+    mut game_events: EventReader&lt;GameEvent&gt;,
+    mut ui_root: Query&lt;(Entity, &amp;mut Style), With&lt;UIRoot&gt;&gt;,
+    asset_server: Res&lt;AssetServer&gt;,
+) {
+    let (ui_root_entity, mut ui_root_style) = ui_root.get_single_mut().unwrap();
+    let mut ui_root = commands.entity(ui_root_entity);
+
+    for event in game_events.iter() {
+        match event {
+            GameEvent::BeginGame { goes_first: _ } =&gt; {
+                // Remove waiting text when game begins
+                ui_root.despawn_descendants();
+
+                // Spawn in game ui
+                ui_root_style.justify_content = JustifyContent::SpaceBetween;
+                ui_root.with_children(|parent| {
+                    for (player_id, player) in game_state.players.iter() {
+                        let is_active_player = game_state.active_player_id == *player_id;
+                        let is_tac_player = player.piece == store::Tile::Tac;
+
+                        parent
+                            .spawn_bundle(TextBundle::from_section(
+                                player.name.clone(),
+                                TextStyle {
+                                    font: asset_server.load(&quot;Inconsolata.ttf&quot;),
+                                    font_size: 24.0,
+                                    color: if !is_active_player {
+                                        Color::hex(&quot;ebdbb2&quot;).unwrap()
+                                    } else {
+                                        if is_tac_player {
+                                            Color::hex(&quot;d65d0e&quot;).unwrap()
+                                        } else {
+                                            Color::hex(&quot;458488&quot;).unwrap()
+                                        }
+                                    },
+                                },
+                            ))
+                            .insert(PlayerHandle(*player_id));
+                    }
+                });
+            }
+            GameEvent::EndGame { reason } =&gt; {
+                // Despawn in game ui
+                ui_root.despawn_descendants();
+                ui_root_style.justify_content = JustifyContent::Center;
+                match reason {
+                    EndGameReason::PlayerLeft { player_id: _ } =&gt; {
+                        ui_root.with_children(|parent| {
+                            parent.spawn_bundle(TextBundle::from_section(
+                                &quot;Your opponent has left&quot;,
+                                TextStyle {
+                                    font: asset_server.load(&quot;Inconsolata.ttf&quot;),
+                                    font_size: 24.0,
+                                    color: Color::hex(&quot;ebdbb2&quot;).unwrap(),
+                                },
+                            ));
+                        });
+                    }
+                    EndGameReason::PlayerWon { winner } =&gt; {
+                        ui_root.with_children(|parent| {
+                            let winner_player = game_state.players.get(winner).unwrap();
+                            let is_tac_player = winner_player.piece == store::Tile::Tac;
+
+                            parent.spawn_bundle(TextBundle::from_section(
+                                format!(&quot;{} has won!&quot;, winner_player.name.clone()),
+                                TextStyle {
+                                    font: asset_server.load(&quot;Inconsolata.ttf&quot;),
+                                    font_size: 24.0,
+                                    color: if is_tac_player {
+                                        Color::hex(&quot;d65d0e&quot;).unwrap()
+                                    } else {
+                                        Color::hex(&quot;458488&quot;).unwrap()
+                                    },
+                                },
+                            ));
+                        });
+                    }
+                }
+            }
+            _ =&gt; {}
+        }
+    }
+}
+</code></pre>
+<p>That&#39;s a long one! Bevy UI code can get pretty long-winded, but there&#39;s a lot of repetition so you do get used to it after a while. We still need to add another update system to highlight the player whose turn it is:</p>
+
+<pre><code class="lang-rust">fn main() {
+    // ...
+    App::new()
+        // ... 
+        .add_system(update_in_game_ui)
+        .run();
+}
+
+////////// UPDATE SYSTEMS //////////
+// ...
+fn update_in_game_ui(
+    game_state: Res&lt;GameState&gt;,
+    mut game_events: EventReader&lt;GameEvent&gt;,
+    mut player_handles: Query&lt;(&amp;PlayerHandle, &amp;mut Text)&gt;,
+) {
+    for event in game_events.iter() {
+        match event {
+            GameEvent::PlaceTile {
+                player_id: _,
+                at: _,
+            } =&gt; {
+                for (handle, mut text) in player_handles.iter_mut() {
+                    let is_active_player = game_state.active_player_id == handle.0;
+                    let is_tac_player =
+                        game_state.players.get(&amp;handle.0).unwrap().piece == store::Tile::Tac;
+
+                    text.sections[0].style.color = if !is_active_player {
+                        Color::hex(&quot;ebdbb2&quot;).unwrap()
+                    } else {
+                        if is_tac_player {
+                            Color::hex(&quot;d65d0e&quot;).unwrap()
+                        } else {
+                            Color::hex(&quot;458488&quot;).unwrap()
+                        }
+                    };
+                }
+            }
+            _ =&gt; {}
+        }
+    }
+}
+</code></pre>
+<p><img src="../images/turn-based/finished-client-game.gif" alt="Two players playing a game of TicTacTussle"></p>
+<p>That&#39;s it! That&#39;s all! You&#39;re done - Congratulations! 🎉 Now venture into the world as a zealot and preacher of the reducer pattern, of bevy and of rust in general! Oh, you want more? Well then:</p>
+<h2 id="i-challenge-you-">I challenge you! 🤺</h2>
+<p>Maybe you have noticed some missing pieces in our game. I have intentionally cut some corners, to try and focus on the networking parts so I&#39;ll leave some of the finishing touches as challenges - Do as many or few as you&#39;d like ✨</p>
+
+<ul>
+<li><strong>Challenge 1</strong>: Right now players can place tiles until the board is full. I&#39;m told that most people play tic tac toe with the rule that only three tiles per player are placed onto the board. Implement this rule such that when a player has 3 pieces on the board, the first placed piece gets moved instead of placing a new one.</li>
+<li><strong>Challenge 2</strong>: Implement some visual indicator of how many pieces each player has left. I think I&#39;d place them underneath the players&#39; names, but maybe there&#39;s a better spot for them.</li>
+<li><strong>Challenge 3</strong>: Implement a way for players to play again once a game has finished. Both players must indicate that they want to have another go for it to happen. If you want to show off, add a counter of how many games each player has won.</li>
+<li><strong>Challenge 4</strong>: Implement an error screen so that we don&#39;t just <code>panic</code> crash when there&#39;s a connection error.</li>
+</ul>
+<p>If you want something a bit harder to work on here are some larger challenges! (These are really more like projects on their own 🤷‍♂️):</p>
+
+<ul>
+<li><strong>Project 1</strong>: Add an in-game chat so players can trash-talk each other while they tussle! Have a look at the <a href="https://github.com/lucaspoffo/renet/tree/master/demo_chat">renet chat example</a> if you need inspiration.</li>
+<li><strong>Project 2</strong>: Add a &quot;local mode&quot; to the game client where two players take turns on the same computer. This is actually doable without too many modifications, due to our networking layer being pretty simple. The idea is that instead of sending <code>GameEvent</code>s to a server, we can intercept and consume them locally instead!</li>
+</ul>
+<h2 id="that-s-all-folks-">That&#39;s all folks!</h2>
+<p>Thank you for reading! If you see something that&#39;s wrong, I would appreciate it very much if you would <a href="https://github.com/herluf-ba/herluf-ba.github.io/pulls">make a pull request</a>. If you want to talk to me <a href="mailto:herlufbaggesen13@gmail.com">I&#39;d love to receive an email</a>, but I&#39;m also sporadically active on the <a href="https://discord.gg/bevy">Bevy Discord</a></p>
+<h5 id="actually-just-one-more-thing">Actually just one more thing</h5>
+<p>Even though I tried my best to make snippets readable, I realize that it might sometimes be a bit confusing to read certain parts out of context from the rest. So here is <code>client/src/main.rs</code> in its entirety to try and remedy that ✨</p>
+
+<pre><code class="lang-rust">use bevy::prelude::*;
+use bevy_renet::{run_if_client_connected, RenetClientPlugin};
+use renet::{
+    ClientAuthentication, RenetClient, RenetConnectionConfig, RenetError, NETCODE_USER_DATA_BYTES,
+};
+use std::{net::UdpSocket, time::SystemTime};
+use store::{EndGameReason, GameEvent, GameState};
+
+// This id needs to be the same that the server is using
+const PROTOCOL_ID: u64 = 1208;
+
+fn main() {
+    // Get username from stdin args
+    let args = std::env::args().collect::&lt;Vec&lt;String&gt;&gt;();
+    let username = &amp;args[1];
+
+    App::new()
+        .insert_resource(WindowDescriptor {
+            title: format!(&quot;TicTacTussle &lt;{}&gt;&quot;, username),
+            width: 480.0,
+            height: 540.0,
+            ..default()
+        })
+        .insert_resource(ClearColor(Color::hex(&quot;282828&quot;).unwrap()))
+        .add_plugins(DefaultPlugins)
+        // Renet setup
+        .add_plugin(RenetClientPlugin)
+        .insert_resource(new_renet_client(&amp;username).unwrap())
+        .add_system(handle_renet_error)
+        .add_system_to_stage(
+            CoreStage::PostUpdate,
+            receive_events_from_server.with_run_criteria(run_if_client_connected),
+        )
+        // Add our game state and register GameEvent as a bevy event
+        .insert_resource(GameState::default())
+        .add_event::&lt;GameEvent&gt;()
+        // Add setup function to spawn UI and board graphics
+        .add_startup_system(setup)
+        // Add systems for playing TicTacTussle
+        .add_system(change_ui_by_stage)
+        .add_system(update_waiting_text)
+        .add_system(update_in_game_ui)
+        .add_system(update_board)
+        .add_system(input)
+        // Finally we run the thing!
+        .run();
+}
+
+////////// COMPONENTS //////////
+#[derive(Component)]
+struct UIRoot;
+
+type TileIndex = usize;
+#[derive(Component)]
+struct HoverDot(pub TileIndex);
+
+#[derive(Component)]
+struct WaitingText;
+
+#[derive(Component)]
+struct PlayerHandle(pub u64);
+
+////////// SETUP //////////
+fn setup(mut commands: Commands, asset_server: Res&lt;AssetServer&gt;) {
+    commands.spawn_bundle(Camera2dBundle::default());
+
+    // Spawn board background
+    commands.spawn_bundle(SpriteBundle {
+        transform: Transform::from_xyz(0.0, -30.0, 0.0),
+        sprite: Sprite {
+            custom_size: Some(Vec2::new(480.0, 480.0)),
+            ..default()
+        },
+        texture: asset_server.load(&quot;background.png&quot;).into(),
+        ..default()
+    });
+
+    // Spawn a dot in each tile for hover effect
+    for x in 0..3 {
+        for y in 0..3 {
+            commands
+                .spawn_bundle(SpriteBundle {
+                    transform: Transform::from_xyz(
+                        160.0 * (x as f32 - 1.0),
+                        -30.0 + 160.0 * (y as f32 - 1.0),
+                        0.0,
+                    ),
+                    sprite: Sprite {
+                        color: Color::rgba(1.0, 1.0, 1.0, 0.0),
+                        custom_size: Some(Vec2::new(160.0, 160.0)),
+                        ..default()
+                    },
+                    texture: asset_server.load(&quot;dot.png&quot;).into(),
+                    ..default()
+                })
+                .insert(HoverDot(x + y * 3));
+        }
+    }
+
+    // Spawn pregame ui
+    commands
+        // A container that centers its children on the screen
+        .spawn_bundle(NodeBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                position: UiRect {
+                    left: Val::Px(0.0),
+                    top: Val::Px(0.0),
+                    ..default()
+                },
+                size: Size::new(Val::Percent(100.0), Val::Px(60.0)),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            color: Color::NONE.into(),
+            ..default()
+        })
+        .insert(UIRoot)
+        .with_children(|parent| {
+            parent
+                .spawn_bundle(TextBundle::from_section(
+                    &quot;Waiting for an opponent...&quot;,
+                    TextStyle {
+                        font: asset_server.load(&quot;Inconsolata.ttf&quot;),
+                        font_size: 24.0,
+                        color: Color::hex(&quot;ebdbb2&quot;).unwrap(),
+                    },
+                ))
+                .insert(WaitingText);
+        });
+}
+
+////////// UPDATE SYSTEMS //////////
+fn input(
+    windows: Res&lt;Windows&gt;,
+    input: Res&lt;Input&lt;MouseButton&gt;&gt;,
+    game_state: Res&lt;GameState&gt;,
+    mut hover_dots: Query&lt;(&amp;HoverDot, &amp;mut Sprite)&gt;,
+    mut client: ResMut&lt;RenetClient&gt;,
+) {
+    // We only want to handle inputs once we are ingame
+    if game_state.stage != store::Stage::InGame {
+        return;
+    }
+
+    let window = windows.get_primary().unwrap();
+    if let Some(mouse_position) = window.cursor_position() {
+        // Determine the index of the tile that the mouse is currently over
+        let x_tile: usize = (mouse_position.x / 160.0).floor() as usize;
+        let y_tile: usize = (mouse_position.y / 160.0).floor() as usize;
+        let tile = x_tile + y_tile * 3;
+
+        // If mouse is outside of board we do nothing
+        if 8 &lt; tile {
+            return;
+        }
+
+        // Toggle hover dots on and off
+        for (dot, mut dot_sprite) in hover_dots.iter_mut() {
+            if dot.0 == tile {
+                dot_sprite.color.set_a(1.0);
+            } else {
+                dot_sprite.color.set_a(0.0);
+            }
+        }
+
+        // If left mouse button is pressed, send a place tile event to the server
+        if input.just_pressed(MouseButton::Left) {
+            let event = GameEvent::PlaceTile {
+                player_id: client.client_id(),
+                at: tile,
+            };
+            client.send_message(0, bincode::serialize(&amp;event).unwrap());
+        }
+    }
+}
+
+fn update_board(
+    mut commands: Commands,
+    game_state: Res&lt;GameState&gt;,
+    mut game_events: EventReader&lt;GameEvent&gt;,
+    asset_server: Res&lt;AssetServer&gt;,
+) {
+    for event in game_events.iter() {
+        match event {
+            GameEvent::PlaceTile { player_id, at } =&gt; {
+                let x = at % 3;
+                let y = at / 3;
+                let texture =
+                    asset_server.load(match game_state.get_player_tile(player_id).unwrap() {
+                        store::Tile::Tac =&gt; &quot;tac.png&quot;,
+                        store::Tile::Tic =&gt; &quot;tic.png&quot;,
+                        store::Tile::Empty =&gt; &quot;dot.png&quot;, // This should never happen
+                    });
+
+                commands.spawn_bundle(SpriteBundle {
+                    transform: Transform::from_xyz(
+                        160.0 * (x as f32 - 1.0),
+                        -30.0 + 160.0 * (y as f32 - 1.0),
+                        0.0,
+                    ),
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(160.0, 160.0)),
+                        ..default()
+                    },
+                    texture: texture.into(),
+                    ..default()
+                });
+            }
+            _ =&gt; {}
+        }
+    }
+}
+
+fn update_waiting_text(mut text_query: Query&lt;&amp;mut Text, With&lt;WaitingText&gt;&gt;, time: Res&lt;Time&gt;) {
+    if let Ok(mut text) = text_query.get_single_mut() {
+        let num_dots = (time.time_since_startup().as_secs() % 3) + 1;
+        text.sections[0].value = format!(
+            &quot;Waiting for an opponent{}{}&quot;,
+            &quot;.&quot;.repeat(num_dots as usize),
+            // Pad with spaces to avoid text changing width and dancing all around the screen 🕺
+            &quot; &quot;.repeat(3 - num_dots as usize)
+        );
+    }
+}
+
+fn change_ui_by_stage(
+    mut commands: Commands,
+    game_state: Res&lt;GameState&gt;,
+    mut game_events: EventReader&lt;GameEvent&gt;,
+    mut ui_root: Query&lt;(Entity, &amp;mut Style), With&lt;UIRoot&gt;&gt;,
+    asset_server: Res&lt;AssetServer&gt;,
+) {
+    let (ui_root_entity, mut ui_root_style) = ui_root.get_single_mut().unwrap();
+    let mut ui_root = commands.entity(ui_root_entity);
+
+    for event in game_events.iter() {
+        match event {
+            GameEvent::BeginGame { goes_first: _ } =&gt; {
+                // Remove waiting text when game begins
+                ui_root.despawn_descendants();
+
+                // Spawn in game ui
+                ui_root_style.justify_content = JustifyContent::SpaceBetween;
+                ui_root.with_children(|parent| {
+                    for (player_id, player) in game_state.players.iter() {
+                        let is_active_player = game_state.active_player_id == *player_id;
+                        let is_tac_player = player.piece == store::Tile::Tac;
+
+                        parent
+                            .spawn_bundle(TextBundle::from_section(
+                                player.name.clone(),
+                                TextStyle {
+                                    font: asset_server.load(&quot;Inconsolata.ttf&quot;),
+                                    font_size: 24.0,
+                                    color: if !is_active_player {
+                                        Color::hex(&quot;ebdbb2&quot;).unwrap()
+                                    } else {
+                                        if is_tac_player {
+                                            Color::hex(&quot;d65d0e&quot;).unwrap()
+                                        } else {
+                                            Color::hex(&quot;458488&quot;).unwrap()
+                                        }
+                                    },
+                                },
+                            ))
+                            .insert(PlayerHandle(*player_id));
+                    }
+                });
+            }
+            GameEvent::EndGame { reason } =&gt; {
+                // Despawn in game ui
+                ui_root.despawn_descendants();
+                ui_root_style.justify_content = JustifyContent::Center;
+                match reason {
+                    EndGameReason::PlayerLeft { player_id: _ } =&gt; {
+                        ui_root.with_children(|parent| {
+                            parent.spawn_bundle(TextBundle::from_section(
+                                &quot;Your opponent has left&quot;,
+                                TextStyle {
+                                    font: asset_server.load(&quot;Inconsolata.ttf&quot;),
+                                    font_size: 24.0,
+                                    color: Color::hex(&quot;ebdbb2&quot;).unwrap(),
+                                },
+                            ));
+                        });
+                    }
+                    EndGameReason::PlayerWon { winner } =&gt; {
+                        ui_root.with_children(|parent| {
+                            let winner_player = game_state.players.get(winner).unwrap();
+                            let is_tac_player = winner_player.piece == store::Tile::Tac;
+
+                            parent.spawn_bundle(TextBundle::from_section(
+                                format!(&quot;{} has won!&quot;, winner_player.name.clone()),
+                                TextStyle {
+                                    font: asset_server.load(&quot;Inconsolata.ttf&quot;),
+                                    font_size: 24.0,
+                                    color: if is_tac_player {
+                                        Color::hex(&quot;d65d0e&quot;).unwrap()
+                                    } else {
+                                        Color::hex(&quot;458488&quot;).unwrap()
+                                    },
+                                },
+                            ));
+                        });
+                    }
+                }
+            }
+            _ =&gt; {}
+        }
+    }
+}
+
+fn update_in_game_ui(
+    game_state: Res&lt;GameState&gt;,
+    mut game_events: EventReader&lt;GameEvent&gt;,
+    mut player_handles: Query&lt;(&amp;PlayerHandle, &amp;mut Text)&gt;,
+) {
+    for event in game_events.iter() {
+        match event {
+            GameEvent::PlaceTile {
+                player_id: _,
+                at: _,
+            } =&gt; {
+                for (handle, mut text) in player_handles.iter_mut() {
+                    let is_active_player = game_state.active_player_id == handle.0;
+                    let is_tac_player =
+                        game_state.players.get(&amp;handle.0).unwrap().piece == store::Tile::Tac;
+
+                    text.sections[0].style.color = if !is_active_player {
+                        Color::hex(&quot;ebdbb2&quot;).unwrap()
+                    } else {
+                        if is_tac_player {
+                            Color::hex(&quot;d65d0e&quot;).unwrap()
+                        } else {
+                            Color::hex(&quot;458488&quot;).unwrap()
+                        }
+                    };
+                }
+            }
+            _ =&gt; {}
+        }
+    }
+}
+
+////////// RENET NETWORKING //////////
+fn new_renet_client(username: &amp;String) -&gt; anyhow::Result&lt;RenetClient&gt; {
+    let server_addr = format!(&quot;{}:{}&quot;, env!(&quot;HOST&quot;), env!(&quot;PORT&quot;)).parse()?;
+    let socket = UdpSocket::bind(&quot;127.0.0.1:0&quot;)?;
+    let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
+    let client_id = current_time.as_millis() as u64;
+
+    // Place username in user data
+    let mut user_data = [0u8; NETCODE_USER_DATA_BYTES];
+    if username.len() &gt; NETCODE_USER_DATA_BYTES - 8 {
+        panic!(&quot;Username is too big&quot;);
+    }
+    user_data[0..8].copy_from_slice(&amp;(username.len() as u64).to_le_bytes());
+    user_data[8..username.len() + 8].copy_from_slice(username.as_bytes());
+
+    let client = RenetClient::new(
+        current_time,
+        socket,
+        client_id,
+        RenetConnectionConfig::default(),
+        ClientAuthentication::Unsecure {
+            client_id,
+            protocol_id: crate::PROTOCOL_ID,
+            server_addr,
+            user_data: Some(user_data),
+        },
+    )?;
+
+    Ok(client)
+}
+
+fn receive_events_from_server(
+    mut client: ResMut&lt;RenetClient&gt;,
+    mut game_state: ResMut&lt;GameState&gt;,
+    mut game_events: EventWriter&lt;GameEvent&gt;,
+) {
+    while let Some(message) = client.receive_message(0) {
+        // Whenever the server sends a message we know that it must be a game event
+        let event: GameEvent = bincode::deserialize(&amp;message).unwrap();
+        trace!(&quot;{:#?}&quot;, event);
+
+        // We trust the server - It&#39;s always been good to us!
+        // No need to validate the events it is sending us
+        game_state.consume(&amp;event);
+
+        // Send the event into the bevy event system so systems can react to it
+        game_events.send(event);
+    }
+}
+
+// If there&#39;s any network error we just panic 🤷‍♂️
+// Ie. Client has lost connection to server, if internet is gone or server shut down etc.
+fn handle_renet_error(mut renet_error: EventReader&lt;RenetError&gt;) {
+    for err in renet_error.iter() {
+        panic!(&quot;{}&quot;, err);
+    }
+}
+</code></pre>
+
+    </main>
+
+    <script src="./assets/prism.js"></script>
+    <script src="./assets/toggle-mode.js"></script>
+  </body>
+</html>

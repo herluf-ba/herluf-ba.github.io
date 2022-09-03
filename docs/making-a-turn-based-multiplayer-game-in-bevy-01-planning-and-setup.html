@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inconsolata&family=Inter&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <link rel="stylesheet" href="./assets/prism.css" />
+
+    
+<title>Making a turn based multiplayer game in Rust - What's a turn based game anyway? (part 1/3)</title>
+<meta name="title" content="Making a turn based multiplayer game in Rust - What's a turn based game anyway? (part 1/3)">
+<meta name="description" content="A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 1/3 which goes into what charaterizes a turn based game and presents a pattern for synchronizing states between players.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-bevy-01-planning-and-setup.html">
+<meta property="og:title" content="Making a turn based multiplayer game in Rust - What's a turn based game anyway? (part 1/3)">
+<meta property="og:description" content="A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 1/3 which goes into what charaterizes a turn based game and presents a pattern for synchronizing states between players.">
+<meta property="og:image" content="/images/herluf.webp">
+<meta property="twitter:card" content="description_large_image">
+<meta property="twitter:url" content="herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-bevy-01-planning-and-setup.html">
+<meta property="twitter:title" content="Making a turn based multiplayer game in Rust - What's a turn based game anyway? (part 1/3)">
+<meta property="twitter:description" content="A tutorial series about writing turn based multiplayer games using Rust and the Bevy game engine. This part 1/3 which goes into what charaterizes a turn based game and presents a pattern for synchronizing states between players.">
+<meta property="twitter:image" content="/images/herluf.webp">
+
+  </head>
+  <body>
+    <header>
+      <a href="/"> {HB} </a>
+
+      <div>
+        <button type="button" id="mode-toggle" onclick="toggleMode()">
+          <img
+            src="data:image/png;base64,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"
+            role="presentation"
+            style="pointer-events: none"
+            width="16"
+            height="16"
+          />
+          <img
+            src="data:image/png;base64,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"
+            role="presentation"
+            style="pointer-events: none"
+            width="16"
+            height="16"
+          />
+          <div id="mode-toggle-dot"></div>
+        </button>
+        <a aria-label="Github" href="https://github.com/herluf-ba">
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 32 32"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M15.9985 0.842105C7.16437 0.842105 0 7.99353 0 16.8158C0 23.8721 4.58406 29.8595 10.942 31.9727C11.7425 32.1188 12.0343 31.6256 12.0343 31.202C12.0343 30.8225 12.0205 29.8183 12.0126 28.4857C7.56218 29.4506 6.62317 26.3441 6.62317 26.3441C5.89534 24.4987 4.84632 24.0074 4.84632 24.0074C3.39361 23.017 4.95633 23.0366 4.95633 23.0366C6.56227 23.1494 7.40698 24.683 7.40698 24.683C8.83416 27.1237 11.1522 26.4187 12.0637 26.0097C12.2091 24.9782 12.6226 24.2741 13.0793 23.875C9.52663 23.471 5.79122 22.1012 5.79122 15.9804C5.79122 14.2359 6.41494 12.8111 7.43842 11.6943C7.27341 11.2903 6.72434 9.66637 7.59557 7.46693C7.59557 7.46693 8.93827 7.03742 11.995 9.10351C13.2709 8.74952 14.6401 8.57302 16.0005 8.56615C17.3599 8.57302 18.7281 8.74952 20.006 9.10351C23.0607 7.03742 24.4015 7.46693 24.4015 7.46693C25.2747 9.66637 24.7256 11.2903 24.5616 11.6943C25.587 12.8111 26.2058 14.2359 26.2058 15.9804C26.2058 22.1169 22.4645 23.4671 18.901 23.8623C19.4746 24.3555 19.9864 25.3302 19.9864 26.8207C19.9864 28.9554 19.9667 30.6783 19.9667 31.202C19.9667 31.6295 20.2555 32.1266 21.0668 31.9707C27.4199 29.8536 32 23.8711 32 16.8158C32 7.99353 24.8356 0.842105 15.9985 0.842105"
+              fill="#1B1817"
+            />
+          </svg>
+        </a>
+      </div>
+    </header>
+
+    <main>
+      <h1>Making a turn based multiplayer game in Rust - What's a turn based game anyway? (part 1/3)</h1>
+      <blockquote>
+<p>This is part 1/3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. This post descripes what we are trying to achieve, and presents a way to design our code to support that. In the <a href="TODO">second post</a> we will write the server and game-logic and in the <a href="TODO">third and final post</a> we will write a client for the game using the awesome Bevy game engine.</p>
+</blockquote>
+<p>Welcome! I am currently working on a casual online card game called Habitat. For this, I have had to think long and hard about how I wanted to approach networking in my game, and I think I have come up with a pretty solid solution (famous last words). So, for the good of all of us, I have decided to describe this solution in a tutorial series! </p>
+<p>To convince you that this pattern is actually nice to work with, we will be building a tic-tac-toe clone called TicTacTussle. In this post I will go into detail about what I mean by &quot;turn-based&quot; and theorize about how we can do networking when working on turn-based games. I&#39;m assuming you are familiar with Rust, what a server and a client is and the rules for tic tac toe. If you aren&#39;t, you could just try to follow along anyway, I&#39;m sure you would get most of it 😉</p>
+<p>First off, we should get into what characterizes a &quot;turn-based game&quot;.</p>
+<h2 id="what-games-are-turn-based-">What games are &quot;turn-based&quot;?</h2>
+<p>Turn-based games are games where a group of players play the game by performing a <em>sequence of actions</em> that advance the game. Usually only a single player has the ability to perform actions at a time. We can think of a <em>turn</em> as a group of one or more actions that, once performed, hands over the privilige of performing actions from one player to another. A large group of games that fit this description are of course board games, like Monopoly, Uno or a favorite of mine <a href="https://www.daysofwonder.com/tickettoride/en/usa/">Ticket to Ride</a>. </p>
+<p>A very important trait of what we will call &quot;turn-based&quot; is that <strong>the state of the game can be detemined solely from a sequence of actions</strong>. This trait has some nice concequences that we will be exploiting once we start writing code. To get familiar with these derived consequenses, lets consider an example from one of the OG turn-based games: Chess ♟</p>
+<p><img src="../images/chess-position.webp" alt="A position in a game of chess"></p>
+<p>Let say we wanted to save the state of the board in the picture above. Well that&#39;s fairly straight forward, we could just do something like</p>
+
+<pre><code class="lang-rust">enum Piece {
+  // White pawn, bishop, knight, rook, queen and king 
+  WP, WB, WN, WR, WQ, WK,
+  // Black pawn, bishop, knight, rook, queen and king 
+  BP, BB, BN, BR, BQ, BK
+}
+
+struct Board(Vec&lt;Vec&lt;Option&lt;Piece&gt;&gt;&gt;);
+
+let the_board_from_the_image = {
+  use Piece::*;
+  Board(vec![
+    vec![Some(BR), None,     None,     Some(BQ), Some(BK), Some(BB), None,     Some(BR)],
+    vec![Some(BP), Some(BB), Some(BP), Some(BN), None,     Some(BP), Some(BP), Some(BP)],
+    vec![None,     Some(BP), None,     None,     None,     None,     None,     None   ],
+    vec![None,     None,     None,     Some(BP), None,     None,     Some(WB), None   ],
+    vec![None,     None,     None,     Some(WP), None,     None,     None,     None   ],
+    vec![Some(WP), None,     None,     None,     None,     Some(WN), None,     None   ],
+    vec![None,     Some(WP), Some(WQ), None,     Some(WP), Some(WP), Some(WP), Some(WP)],
+    vec![Some(WR), None,     None,     None,     Some(WK), Some(WB), None,     Some(WR)],
+  ])
+};
+</code></pre>
+<p>How could we synchronize a game of chess between players playing online? A naive approach would be to just have a server recieve moves from each player, calculate a new Board based on that move and then send this new Board to both players. That would work, and honestly you could probably make a game with that approach as long as the size of the games state, ie. the Board struct, isn&#39;t too large.</p>
+<p>A more efficient, and frankly straight up cooler, solution is to just have the server send the <em>move the player performs</em> rather than the state. Because <em>the game state can be determined from a sequence of actions</em>, the players themselves can determine the most recent board. This way the messages between the server and players become something like <code>GameEvent::MovePiece { piece: Piece::Rook, position: &quot;a4&quot; }</code> rather than <code>*entire board with all the pieces*</code>, which almost always is way smaller!</p>
+<p>In fact, this approach of thinking about a game state as a <em>sequence of actions</em> is so useful that it was <a href="https://en.wikipedia.org/wiki/Algebraic_notation_(chess">adobted by chess players</a>) to describe a game of chess around 1847(!). This was of course way before the internet, so the reduced bandwidth usage might not have been too intresting to these guys. Although one can imagine the painstaking task of drawing each board of a game of chess, if you were writing a book trying to explain your favorite openings. The image shown above is from a game between Garry Kasparov and Anatoly Karpov and that entire game can be decribed by these moves (<em>cheffs kiss ~ mwaaah</em>)</p>
+
+<pre><code class="lang-text">1. d4 Nf6 2. c4 e6 3. Nf3 b6 4. Nc3 Bb7 5. a3 d5 6. cxd5 Nxd5 7. Qc2 Nd7 8. Nxd5
+exd5 9. Bg5 f6 10. Bf4 c5 11. g3 g6 12. h4 Qe7 13. Bg2 Bg7 14. h5 f5 15. Qd2 Bf6
+16. Rc1 Rc8 17. Rc3 Rc6 18. Re3 Re6 19. Rxe6 Qxe6 20. Ng5 Qe7 21. dxc5 Nxc5 22.
+hxg6 d4 23. g7 Bxg7 24. Bxb7 Qxb7 25. f3 Qd5 26. Rxh7 Rxh7 27. Nxh7 Qb3 28. Bd6
+Ne6 29. Ng5 Bh6 30. Bf4 Bxg5 31. Bxg5 Nxg5 32. Qxg5 Qxb2 33. Qxf5 Qc1+ 34. Kf2
+Qe3+ 35. Kf1 Qc1+ 36. Kg2 Qxa3 37. Qh5+ Kd7 38. Qg4+ Kc6 39. Qxd4 b5 40. g4 b4
+41. g5 1-0
+</code></pre>
+<p>Some other less obvious consequenses of thinking about game states as sequences of actions are:</p>
+
+<ul>
+<li>It&#39;s fairly straight forward to implement undo and redo functionality. Just pop or push actions onto the sequence.</li>
+<li>Saving and loading games can be done by simply saving and loading the sequence of actions.</li>
+<li>Having the actions players perform in the game, given a particular sequence of previous actions is <em>very useful</em> if we want to train a machine learning algorithm to add intresting bots to our games. </li>
+</ul>
+<p>Now that we have established &quot;turn-based games&quot; as games that can be thought of as a <em>sequence of actions</em>, let&#39;s start thinking about how to design our code around this.</p>
+<h2 id="a-pattern-for-online-turn-based-games">A pattern for online turn-based games</h2>
+<p>The overall problem we are trying to solve, is to have the server and the players agree on the state of the game. One solution to this problem is to use the incredibly useful <strong>reducer pattern</strong>, sometimes refered to as the &quot;event pattern&quot; or the <a href="https://gameprogrammingpatterns.com/command.html">&quot;command pattern&quot;</a>. At its core it&#39;s super simple: </p>
+<p><strong>A <em>reducer</em> is a function that takes a state and an event and produces a new state</strong></p>
+<p>Already sounds familiar right? Events are just what we have been calling actions up until now. Events is what the players and server are going to use to communicate with each other. The &quot;state&quot; is, well, the state of our game! Both the server and all players will hold their own version the game state and both will use the same reducer function to update these states when they receive events. </p>
+<p>Using this pattern also lets us address the issue of cheating fairly easily. We will just have the server determine if the event a player is trying to add to the game state looks valid, before sending it to all players. Such a simple way to <strong>reduce</strong> cheating to zero in our game (pun intented times a thuosand).</p>
+<p>So the game will progress like this:</p>
+
+<ol>
+<li>Player sends event to the server</li>
+<li>The server inspect the event and verifies that it is valid and allowed</li>
+<li>The server updates its own state using the reducer function</li>
+<li>The server send the valid event to all players</li>
+<li>Each player uses the reducer function to update their states</li>
+<li>Either someone has won or we go to 1. </li>
+</ol>
+<p>Here&#39;s a visual representation for those of us that, like me, learn best when there&#39;s nice colors involved:</p>
+<p><img src="../images/update-state.gif" alt="An illustration of how the game progresses"></p>
+<p>Now lets look at how we could implement the reducer pattern in rust!</p>
+<h2 id="how-do-we-write-a-reducer-in-rust-">How do we write a reducer in Rust?</h2>
+<p>If we were </p>
+
+<pre><code class="lang-rust">use std::collections::HashMap;
+
+pub struct GameState {
+    players: HashMap&lt;u64, String&gt;,
+    history: Vec&lt;GameEvent&gt;,
+}
+
+#[derive(Clone)]
+pub enum GameEvent {
+    PlayerJoined { player_id: u64, name: String },
+}
+
+impl GameEvent {
+    /// Determines if the event is valid on a particular gamestate
+    pub fn is_valid_on(&amp;self, game_state: &amp;GameState) -&gt; bool {
+        use GameEvent::*;
+        match self {
+            PlayerJoined { player_id, name: _ } =&gt; {
+                if game_state.players.contains_key(player_id) {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
+}
+
+impl GameState {
+    /// Aggregates an event into the GameState. 
+    /// Note that the event is assumed to be valid when reduce is called
+    fn reduce(&amp;mut self, valid_event: &amp;GameEvent) {
+        use GameEvent::*;
+        match valid_event {
+            PlayerJoined { player_id, name } =&gt; {
+                self.players.insert(*player_id, name.to_string());
+            }
+        }
+
+        self.history.push(event.clone());
+    }
+
+    /// Dispatches an event, modifying the GameState
+    pub fn dispatch(&amp;mut self, event: &amp;GameEvent) {
+        if event.is_valid_on(&amp;self) {
+            self.reduce(event);
+        }
+    }
+}
+</code></pre>
+<h2 id="what-s-next-">What&#39;s next?</h2>
+<p>That&#39;s it for this post. In the next one, we will setup a Rust workspace, write the server for our game and adapt our gamestate implementation into a library that the server can use. You can already <a href="TODO">read part 2 here</a> 🕺</p>
+<p>Thank you for reading! If you see something that&#39;s wrong, I would appreciate it very much if you would <a href="TODO">make a pull request</a>. If you want to talk to me <a href="mailto:herlufbaggesen13@gmail.com">I&#39;d love to receive an email</a>, but I&#39;m also sporatically active on the <a href="https://discord.gg/bevy">Bevy Discord</a></p>
+
+    </main>
+
+    <script src="./assets/prism.js"></script>
+    <script src="./assets/toggle-mode.js"></script>
+  </body>
+</html>

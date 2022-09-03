@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inconsolata&family=Inter&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <link rel="stylesheet" href="./assets/prism.css" />
+
+    
+<title>Making a turn-based multiplayer game in Rust - Game logic and server (part 2/3)</title>
+<meta name="title" content="Making a turn-based multiplayer game in Rust - Game logic and server (part 2/3)">
+<meta name="description" content="A tutorial series about writing turn-based multiplayer games using Rust and the Bevy game engine. This part 2 of 3 where we will use the reducer pattern that was introduced in the previous post, to write a server for our game">
+<meta property="og:type" content="website">
+<meta property="og:url" content="herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server.html">
+<meta property="og:title" content="Making a turn-based multiplayer game in Rust - Game logic and server (part 2/3)">
+<meta property="og:description" content="A tutorial series about writing turn-based multiplayer games using Rust and the Bevy game engine. This part 2 of 3 where we will use the reducer pattern that was introduced in the previous post, to write a server for our game">
+<meta property="og:image" content="/images/herluf.webp">
+<meta property="twitter:card" content="description_large_image">
+<meta property="twitter:url" content="herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server.html">
+<meta property="twitter:title" content="Making a turn-based multiplayer game in Rust - Game logic and server (part 2/3)">
+<meta property="twitter:description" content="A tutorial series about writing turn-based multiplayer games using Rust and the Bevy game engine. This part 2 of 3 where we will use the reducer pattern that was introduced in the previous post, to write a server for our game">
+<meta property="twitter:image" content="/images/herluf.webp">
+
+  </head>
+  <body>
+    <header>
+      <a href="/"> {HB} </a>
+
+      <div>
+        <button type="button" id="mode-toggle" onclick="toggleMode()">
+          <img
+            src="data:image/png;base64,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"
+            role="presentation"
+            style="pointer-events: none"
+            width="16"
+            height="16"
+          />
+          <img
+            src="data:image/png;base64,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"
+            role="presentation"
+            style="pointer-events: none"
+            width="16"
+            height="16"
+          />
+          <div id="mode-toggle-dot"></div>
+        </button>
+        <a aria-label="Github" href="https://github.com/herluf-ba">
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 32 32"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M15.9985 0.842105C7.16437 0.842105 0 7.99353 0 16.8158C0 23.8721 4.58406 29.8595 10.942 31.9727C11.7425 32.1188 12.0343 31.6256 12.0343 31.202C12.0343 30.8225 12.0205 29.8183 12.0126 28.4857C7.56218 29.4506 6.62317 26.3441 6.62317 26.3441C5.89534 24.4987 4.84632 24.0074 4.84632 24.0074C3.39361 23.017 4.95633 23.0366 4.95633 23.0366C6.56227 23.1494 7.40698 24.683 7.40698 24.683C8.83416 27.1237 11.1522 26.4187 12.0637 26.0097C12.2091 24.9782 12.6226 24.2741 13.0793 23.875C9.52663 23.471 5.79122 22.1012 5.79122 15.9804C5.79122 14.2359 6.41494 12.8111 7.43842 11.6943C7.27341 11.2903 6.72434 9.66637 7.59557 7.46693C7.59557 7.46693 8.93827 7.03742 11.995 9.10351C13.2709 8.74952 14.6401 8.57302 16.0005 8.56615C17.3599 8.57302 18.7281 8.74952 20.006 9.10351C23.0607 7.03742 24.4015 7.46693 24.4015 7.46693C25.2747 9.66637 24.7256 11.2903 24.5616 11.6943C25.587 12.8111 26.2058 14.2359 26.2058 15.9804C26.2058 22.1169 22.4645 23.4671 18.901 23.8623C19.4746 24.3555 19.9864 25.3302 19.9864 26.8207C19.9864 28.9554 19.9667 30.6783 19.9667 31.202C19.9667 31.6295 20.2555 32.1266 21.0668 31.9707C27.4199 29.8536 32 23.8711 32 16.8158C32 7.99353 24.8356 0.842105 15.9985 0.842105"
+              fill="#1B1817"
+            />
+          </svg>
+        </a>
+      </div>
+    </header>
+
+    <main>
+      <h1>Making a turn-based multiplayer game in Rust - Game logic and server (part 2/3)</h1>
+      <blockquote>
+<p>This is part 2 of 3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. In this post we will use the reducer pattern that was introduced in the <a href="https://herluf-ba/herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-01-whats-a-turn-based-game-anyway">previous post</a>, to write a server for our game. In the <a href="https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-03-writing-a-client-using-bevy">third and final post</a> we will write a client for the game using the awesome Bevy game engine.</p>
+</blockquote>
+<p>Welcome back! 👋 In this post we will use the reducer pattern to write our game server. Let&#39;s just get started right away!</p>
+<h2 id="a-good-starting-point">A good starting point</h2>
+<p>To get straight into the interesting bits of the project I&#39;ve prepared a template for us to use. It sits in a branch of the tic-tac-tussle repository, so it&#39;s easy to clone like this:</p>
+
+<pre><code class="lang-bash">git clone -b template https://github.com/herluf-ba/tic-tac-tussle.git
+# Or however you like to do your clonin&#39; (you can use the zip-download, I won&#39;t judge 👀)
+</code></pre>
+<p>The template is a <a href="https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html">cargo workspace</a> with two binaries <code>client</code> and <code>server</code> and a library they both use called <code>store</code>. All three have a <code>Cargo.toml</code> file with the necessary dependencies already added to them as well as an empty <code>src/[main/lib].rs</code>. The <code>client</code> also has some assets for us to use, once we get around to writing that in the next post.</p>
+
+<pre><code class="lang-text">tic-tac-tussle/
+├── client/
+|   ├── Cargo.toml
+|   ├── assets/*
+|   ├── src/
+|   |   ├── main.rs
+├── server/
+|   ├── Cargo.toml
+|   ├── src/
+|   |   ├── main.rs
+├── store/
+|   ├── Cargo.toml
+|   ├── src/
+|   |   ├── lib.rs
+</code></pre>
+<h2 id="using-renet-to-write-a-game-server">Using renet to write a game server</h2>
+<p>Writing a game server can be a daunting task. There are lots of rabbit holes to get sucked into! What networking protocol is best suited for our game? How do we keep track of players connecting and disconnecting? How do we broadcast messages to players? How do we establish secure connections to players? How do we protect our servers from malicious stuff like DDoS or replay attacks?</p>
+<p>All these questions present interesting, albeit time-devouring, challenges for any programmer, and it&#39;s easy to spend weeks mucking around with reliable UDP channels and the like. So instead of writing the whole thing from scratch, we can save an ocean of time by using one of the <a href="https://arewegameyet.rs/ecosystem/networking/">many networking crates</a> written by the generous rust community.</p>
+<p>For this project, we will be using <a href="https://crates.io/crates/renet">renet</a>. It&#39;s an awesome crate with a bunch of features. Some of the crucial ones for us are that it: </p>
+
+<ul>
+<li>handles sending packages over UDP</li>
+<li>handles player connects and disconnects</li>
+<li>prevents players from various malicious behaviors</li>
+<li>has a bevy client library (which we will use in the next post!)</li>
+</ul>
+<p>Renet has nice examples to get us started. Let&#39;s write a minimal server in <code>server/src/main.rs</code>, which is just a slightly altered version of the <a href="https://github.com/lucaspoffo/renet/blob/master/renet/examples/echo.rs">&quot;echo&quot; example</a></p>
+
+<pre><code class="lang-rust">// server/src/main.rs
+
+use log::{info, trace};
+use renet::{RenetConnectionConfig, RenetServer, ServerAuthentication, ServerConfig, ServerEvent};
+use std::net::{SocketAddr, UdpSocket};
+use std::time::{Duration, Instant, SystemTime};
+
+// Only clients that can provide the same PROTOCOL_ID that the server is using will be able to connect.
+// This can be used to make sure players use the most recent version of the client for instance.
+pub const PROTOCOL_ID: u64 = 1208;
+// TicTacTussle converted to utf-8 codes is 84 105 99 84 97 99 84 117 115 115 108 101
+// If you add those up you get 1208.
+// It is not necessary to do the PROTOCOL_ID like this but it is fun 🤷‍♂️
+
+fn main() {
+    env_logger::init();
+
+    let server_addr: SocketAddr = &quot;127.0.0.1:5000&quot;.parse().unwrap();
+    let mut server: RenetServer = RenetServer::new(
+        // Pass the current time to renet, so it can use it to order messages
+        SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap(),
+        // Pass a server configuration specifying that we want to allow only 2 clients to connect
+        // and that we don&#39;t want to authenticate them. Everybody is welcome!
+        ServerConfig::new(2, PROTOCOL_ID, server_addr, ServerAuthentication::Unsecure),
+        // Pass the default connection configuration. 
+        // This will create a reliable, unreliable and blocking channel.
+        // We only actually need the reliable one, but we can just not use the other two.
+        RenetConnectionConfig::default(),
+        UdpSocket::bind(server_addr).unwrap(),
+    )
+    .unwrap();
+
+    trace!(&quot;🕹  TicTacTussle server listening on {}&quot;, server_addr);
+
+    let mut last_updated = Instant::now();
+    loop {
+        // Update server time
+        let now = Instant::now();
+        server.update(now - last_updated).unwrap();
+        last_updated = now;
+
+        // Receive connection events from clients
+        while let Some(event) = server.get_event() {
+            match event {
+                ServerEvent::ClientConnected(id, _user_data) =&gt; {
+                    info!(&quot;🎉 Client {} connected.&quot;, id);
+                }
+                ServerEvent::ClientDisconnected(id) =&gt; {
+                    info!(&quot;👋 Client {} disconnected&quot;, id);
+                }
+            }
+        }
+        std::thread::sleep(Duration::from_millis(50));
+    }
+}
+</code></pre>
+<p>So far, not too bad 👍 Hopefully it comes across just how much renet is bringing to the project! Now, a server that logs connects and disconnects is like a &quot;hello world&quot; version of a game server. Or is that an echo server? Anyway, to play TicTacTussle we need some game logic! This is where our reducer pattern from the previous post resurges. Let&#39;s work on the <code>store</code> library next!</p>
+<h2 id="writing-game-logic-using-the-reducer-pattern">Writing game logic using the reducer pattern</h2>
+<p>Considering that we are already experts on the reducer pattern and know why it&#39;s cool, why don&#39;t we just start working on <code>store/src/lib.rs</code> by adding a <code>GameState</code> struct:</p>
+
+<pre><code class="lang-rust">// store/src/lib.rs
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+// This just makes it easier to dissern between a player id and any ol&#39; u64
+type PlayerId = u64;
+
+/// Possible states that a position in the board can be in
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum Tile {
+    Empty,
+    Tic,
+    Tac,
+}
+
+/// Struct for storing player related data.
+/// In tic-tac-toe the only thing we need is the name and the piece the player will be placing
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Player {
+    pub name: String,
+    pub piece: Tile,
+}
+
+/// The different states a game can be in. (not to be confused with the entire &quot;GameState&quot;)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum Stage {
+    PreGame,
+    InGame,
+    Ended,
+}
+
+/// A GameState object that is able to keep track of a game of TicTacTussle
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct GameState {
+    pub stage: Stage,
+    pub board: [Tile; 9],
+    pub active_player_id: PlayerId,
+    pub players: HashMap&lt;PlayerId, Player&gt;,
+    pub history: Vec&lt;GameEvent&gt;,
+}
+
+
+impl Default for GameState {
+    fn default() -&gt; Self {
+        Self {
+            stage: Stage::PreGame,
+            board: [
+                Tile::Empty,
+                Tile::Empty,
+                Tile::Empty,
+                Tile::Empty,
+                Tile::Empty,
+                Tile::Empty,
+                Tile::Empty,
+                Tile::Empty,
+                Tile::Empty,
+            ],
+            active_player_id: 0,
+            players: HashMap::new(),
+            history: Vec::new(),
+        }
+    }
+}
+</code></pre>
+<p>That&#39;s already a lot more complicated than the <code>GameState</code> from the last post - Cool! Now let&#39;s think about what <code>GameEvent</code>s we need:</p>
+
+<pre><code class="lang-rust">/// The reasons why a game could end
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Deserialize)]
+pub enum EndGameReason {
+    // In tic tac toe it doesn&#39;t make sense to keep playing when one of the players disconnect.
+    // Note that it might make sense to keep playing in some other game (like Team Fight Tactics for instance).
+    PlayerLeft { player_id: PlayerId },
+    PlayerWon { winner: PlayerId },
+}
+
+/// An event that progresses the GameState forward
+#[derive(Debug, Clone, Serialize, PartialEq, Deserialize)]
+pub enum GameEvent {
+    BeginGame { goes_first: PlayerId },
+    EndGame { reason: EndGameReason },
+    PlayerJoined { player_id: PlayerId, name: String },
+    PlayerDisconnected { player_id: PlayerId },
+    PlaceTile { player_id: PlayerId, at: usize },
+}
+</code></pre>
+<p>Tic tac toe is simple enough that only 5 event types is enough! Now, just like last time, we need to implement <code>validate</code> and <code>consume</code> on <code>GameState</code> to have our state interacting with events. Let&#39;s start with <code>validate</code>:</p>
+
+<pre><code class="lang-rust">impl GameState {
+    /// Determines whether an event is valid considering the current GameState
+    pub fn validate(&amp;self, event: &amp;GameEvent) -&gt; bool {
+        use GameEvent::*;
+        match event {
+            BeginGame { goes_first } =&gt; {
+                // Check that the player supposed to go first exists
+                if !self.players.contains_key(goes_first) {
+                  return false;
+                }
+
+                // Check that the game hasn&#39;t started yet. (we don&#39;t want to double start a game)
+                if self.stage != Stage::PreGame {
+                    return false;
+                }
+            }
+            EndGame { reason } =&gt; match reason {
+                EndGameReason::PlayerWon { winner: _ } =&gt; {
+                    // Check that the game has started before someone wins it
+                    if self.stage != Stage::InGame {
+                        return false;
+                    }
+                }
+                _ =&gt; {}
+            },
+            PlayerJoined { player_id, name: _ } =&gt; {
+                // Check that there isn&#39;t another player with the same id
+                if self.players.contains_key(player_id) {
+                    return false;
+                }
+            }
+            PlayerDisconnected { player_id } =&gt; {
+                // Check player exists
+                if !self.players.contains_key(player_id) {
+                    return false;
+                }
+            }
+            PlaceTile { player_id, at } =&gt; {
+                // Check player exists
+                if !self.players.contains_key(player_id) {
+                    return false;
+                }
+                // Check player is currently the one making their move
+                if self.active_player_id != *player_id {
+                    return false;
+                }
+
+                // Check that the tile index is inside the board
+                if *at &gt; 8 {
+                    return false;
+                }
+
+                // Check that the player is not trying to place piece on top of another 
+                // (which is considered a cheeky move in tic tac toe)
+                if self.board[*at] != Tile::Empty {
+                    return false;
+                }
+            }
+        }
+
+        // We couldn&#39;t find anything wrong with the event so it must be good 
+        true
+    }
+}
+</code></pre>
+<p>And we can make <code>consume</code> like this:</p>
+
+<pre><code class="lang-rust">impl GameState {
+    // validate ...
+
+    /// Consumes an event, modifying the GameState and adding the event to its history
+    /// NOTE: consume assumes the event to have already been validated and will accept *any* event passed to it
+    pub fn consume(&amp;mut self, valid_event: &amp;GameEvent) {
+        use GameEvent::*;
+        match valid_event {
+            BeginGame { goes_first } =&gt; {
+                self.active_player_id = *goes_first;
+                self.stage = Stage::InGame;
+            }
+            EndGame { reason: _ } =&gt; self.stage = Stage::Ended,
+            PlayerJoined { player_id, name } =&gt; {
+                self.players.insert(
+                    *player_id,
+                    Player {
+                        name: name.to_string(),
+                        // First player to join gets tac, second gets tic
+                        piece: if self.players.len() &gt; 0 {
+                            Tile::Tac
+                        } else {
+                            Tile::Tic
+                        },
+                    },
+                );
+            }
+            PlayerDisconnected { player_id } =&gt; {
+                self.players.remove(player_id);
+            }
+            PlaceTile { player_id, at } =&gt; {
+                let piece = self.players.get(player_id).unwrap().piece;
+                self.board[*at] = piece;
+                self.active_player_id = self
+                    .players
+                    .keys()
+                    .find(|id| *id != player_id)
+                    .unwrap()
+                    .clone();
+            }
+        }
+
+        self.history.push(valid_event.clone());
+    }
+}
+</code></pre>
+<p>Looking at <code>consume</code> it&#39;s clear that tic tac toe is a pretty simple game 😅 Finally, since we know that we will need it later, we should add a way to determine if a player has won the game:</p>
+
+<pre><code class="lang-rust">impl GameState {
+    // validate...
+    // consume...
+
+    /// Determines if someone has won the game
+    pub fn determine_winner(&amp;self) -&gt; Option&lt;PlayerId&gt; {
+        // All the combinations of 3 tiles that wins the game
+        let row1: [usize; 3] = [0, 1, 2];
+        let row2: [usize; 3] = [3, 4, 5];
+        let row3: [usize; 3] = [6, 7, 8];
+        let col1: [usize; 3] = [0, 3, 6];
+        let col2: [usize; 3] = [1, 4, 7];
+        let col3: [usize; 3] = [2, 5, 8];
+        let diag1: [usize; 3] = [0, 4, 8];
+        let diag2: [usize; 3] = [2, 4, 6];
+
+        for arr in [row1, row2, row3, col1, col2, col3, diag1, diag2] {
+            // Read tiles from board
+            let tiles: [Tile; 3] = [self.board[arr[0]], self.board[arr[1]], self.board[arr[2]]];
+            // Determine if tiles are all equal
+            let all_are_the_same = tiles
+                .get(0)
+                .map(|first| tiles.iter().all(|x| x == first))
+                .unwrap_or(true);
+
+            if all_are_the_same {
+                // Determine which of the players won
+                if let Some((winner, _)) = self
+                    .players
+                    .iter()
+                    .find(|(_, player)| player.piece == self.board[arr[0]])
+                {
+                    return Some(*winner);
+                }
+            }
+        }
+
+        None
+    }
+}
+</code></pre>
+<p>That&#39;s all the game logic we need. Next, we should head back to <code>server/src/main.rs</code> and make sure it uses our newly implemented <code>GameState</code>.</p>
+<h2 id="making-our-server-stateful">Making our server stateful</h2>
+<p>Back in <code>server/src/main.rs</code> we are now ready to finish our game server! There are a couple of things we are now able to do: </p>
+
+<ul>
+<li>We need to tell players that connect to the server about the other players that are already connected. Likewise, already connected players need to get notified about new players connecting.</li>
+<li>When two players have connected we can start the game, since tic tac toe only required two players.</li>
+<li>When a player disconnects, we need to end the game. Playing alone is kinda boring.</li>
+<li>When a player submits a <code>GameEvent</code> we need to validate it. If it&#39;s good we need to broadcast it to all players so they can advance their <code>GameState</code>s.</li>
+</ul>
+<p>Let&#39;s start from the top by handling player connects!</p>
+
+<pre><code class="lang-rust">// server/src/main.rs
+fn main() {
+    // ...
+    loop {
+        // ...
+
+        while let Some(event) = server.get_event() {
+            match event {
+                ServerEvent::ClientConnected(id, user_data) =&gt; {
+                    // Tell the recently joined player about the other player
+                    for (player_id, player) in game_state.players.iter() {
+                        let event = store::GameEvent::PlayerJoined {
+                            player_id: *player_id,
+                            name: player.name.clone(),
+                        };
+                        server.send_message(id, 0, bincode::serialize(&amp;event).unwrap());
+                    }
+
+                    // Add the new player to the game
+                    let event = store::GameEvent::PlayerJoined {
+                        player_id: id,
+                        name: name_from_user_data(&amp;user_data),
+                    };
+                    game_state.consume(&amp;event);
+
+                    // Tell all players that a new player has joined
+                    server.broadcast_message(0, bincode::serialize(&amp;event).unwrap());
+
+                    info!(&quot;Client {} connected.&quot;, id);
+                    // In TicTacTussle the game can begin once two players has joined
+                    if game_state.players.len() == 2 {
+                        let event = store::GameEvent::BeginGame { goes_first: id };
+                        game_state.consume(&amp;event);
+                        server.broadcast_message(0, bincode::serialize(&amp;event).unwrap());
+                        trace!(&quot;The game gas begun&quot;);
+                    }
+                }
+                ServerEvent::ClientDisconnected(id) =&gt; {
+                  // ...
+                }
+            }
+        }
+    }
+}
+</code></pre>
+<p>At first, it can be a little tricky to get the connection logic working, since both the player connecting needs to know about the other players, and they also need to know about the player connecting. It can be even more complicated if the game you are making allows players to connect to ongoing games, since then you&#39;ll need a more elaborate synchronizing step. Luckily that&#39;s not the case for us. Moving on to disconnects!</p>
+
+<pre><code class="lang-rust">fn main() {
+    // ...
+    loop {
+        // ...
+
+        while let Some(event) = server.get_event() {
+            match event {
+                ServerEvent::ClientConnected(id, user_data) =&gt; {
+                  // ...
+                }
+                ServerEvent::ClientDisconnected(id) =&gt; {
+                    // First consume a disconnect event
+                    let event = store::GameEvent::PlayerDisconnected { player_id: id };
+                    game_state.consume(&amp;event);
+                    server.broadcast_message(0, bincode::serialize(&amp;event).unwrap());
+                    info!(&quot;Client {} disconnected&quot;, id);
+
+                    // Then end the game, since tic tac toe can&#39;t go on with a single player
+                    let event = store::GameEvent::EndGame {
+                        reason: EndGameReason::PlayerLeft { player_id: id },
+                    };
+                    game_state.consume(&amp;event);
+                    server.broadcast_message(0, bincode::serialize(&amp;event).unwrap());
+
+                    // NOTE: Since we don&#39;t authenticate users we can&#39;t do any reconnection attempts.
+                    // We simply have no way to know if the next user is the same as the one that disconnected.
+                }
+            }
+        }
+    }
+}
+</code></pre>
+<p>It might not seem like it, but our server is almost done! We just need to broadcast valid <code>GameEvents</code> to all players when we receive them. We can do that like this:</p>
+
+<pre><code class="lang-rust">fn main() {
+    // ...
+    loop {
+        // ...
+        while let Some(event) = server.get_event() {
+            match event {
+                ServerEvent::ClientConnected(id, user_data) =&gt; {
+                    // ...
+                }
+                ServerEvent::ClientDisconnected(id) =&gt; {
+                    // ...
+                }
+            }
+        }
+
+        // Receive GameEvents from clients. Broadcast valid events.
+        for client_id in server.clients_id().into_iter() {
+            while let Some(message) = server.receive_message(client_id, 0) {
+                if let Ok(event) = bincode::deserialize::&lt;store::GameEvent&gt;(&amp;message) {
+                    if game_state.validate(&amp;event) {
+                        game_state.consume(&amp;event);
+                        trace!(&quot;Player {} sent:\n\t{:#?}&quot;, client_id, event);
+                        server.broadcast_message(0, bincode::serialize(&amp;event).unwrap());
+
+                        // Determine if a player has won the game
+                        if let Some(winner) = game_state.determine_winner() {
+                            let event = store::GameEvent::EndGame {
+                                reason: store::EndGameReason::PlayerWon { winner },
+                            };
+                            server.broadcast_message(0, bincode::serialize(&amp;event).unwrap());
+                        }
+                    } else {
+                        warn!(&quot;Player {} sent invalid event:\n\t{:#?}&quot;, client_id, event);
+                    }
+                }
+            }
+        }
+
+        server.send_packets().unwrap();
+        thread::sleep(Duration::from_millis(50));
+    }
+}
+</code></pre>
+<p>And our server is now finished! 🎉 The actual server code is fairly short, but that&#39;s because we separated the game logic out into its own library.</p>
+<h2 id="what-s-next-">What&#39;s next?</h2>
+<p>That&#39;s it for this post. In the next one, we will write a client application using the <a href="https://bevyengine.org/">Bevy game engine</a> so we can finally play a round of TicTacTussle! </p>
+<p>You can already <a href="https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-03-writing-a-client-using-bevy">read part 3 here</a> 🕺</p>
+<p>Thank you for reading! If you see something that&#39;s wrong, I would appreciate it very much if you would <a href="https://github.com/herluf-ba/herluf-ba.github.io/pulls">make a pull request</a>. If you want to talk to me <a href="mailto:herlufbaggesen13@gmail.com">I&#39;d love to receive an email</a>, but I&#39;m also sporadically active on the <a href="https://discord.gg/bevy">Bevy Discord</a></p>
+
+    </main>
+
+    <script src="./assets/prism.js"></script>
+    <script src="./assets/toggle-mode.js"></script>
+  </body>
+</html>

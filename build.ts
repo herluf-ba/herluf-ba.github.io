@@ -6,6 +6,7 @@ import { ensureFile } from "https://deno.land/std@0.54.0/fs/ensure_file.ts";
 // deno run --allow-read --allow-write build.ts
 // To compress images run:
 // for file in ${OUT_DIR}/images/*; do bin/cwebp "$file" -o "${file%.*}.webp"; done
+// for file in docs/images/*; do bin/cwebp "$file" -o "${file%.*}.webp"; done
 
 ///////// SETTINGS /////////
 const SITE_ROOT = "herluf-ba.github.io";
@@ -133,15 +134,15 @@ const render = (template: string, parsed: Page) =>
   template
     .replaceAll("{{META}}", render_meta(parsed))
     .replaceAll("{{TITLE}}", parsed.meta.title)
-    .replaceAll("{{CONTENT}}", parsed.content)
     .replaceAll("{{TAGS}}", render_tags(parsed.meta.tags))
-    .replaceAll("{{PUBLIC}}", parsed.public_path);
+    .replaceAll("{{PUBLIC}}", parsed.public_path)
+    .replaceAll("{{CONTENT}}", parsed.content);
 
 ///////// SITE GENERATION /////////
 // Read and parse all posts in content folder
 const markdown_files = await getNestedMdFiles(CONTENT_DIR);
 const parsed_files = (await Promise.all(markdown_files.map(parse))).sort(
-  (a, b) => a.meta.publishedAt?.localeCompare(b.meta.publishedAt)
+  (a, b) => b.meta.publishedAt?.localeCompare(a.meta.publishedAt)
 );
 
 // Render and save all posts

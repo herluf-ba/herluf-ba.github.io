@@ -4,10 +4,20 @@
 
   --color-bg: #ffffff;
   --color-bg-emph: #f3f3f4;
-  --color-primary: #19788f;
+  --color-primary: #458488;
+}
+
+html.dark-mode {
+  --color-text: #ebdbb2;
+  --color-text-fade: #a89984;
+
+  --color-bg: #282828;
+  --color-bg-emph: #1d2021;
+  --color-primary: #458488;
 }
 
 * {
+  /* transition: background-color 150ms ease-out, color 150ms ease-out; */
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -15,12 +25,15 @@
   color: var(--color-text);
 }
 
+html {
+  background-color: var(--color-bg);
+}
+
 main {
   padding: 0 32px;
   max-width: 800px;
   margin: 32px auto 0 auto;
   min-height: 100vh;
-  background-color: var(--color-bg);
 }
 
 p,
@@ -43,23 +56,48 @@ a:visited {
 p,
 img,
 pre,
-blockquote,
+blockquote {
+  margin-bottom: 32px;
+}
+
 ul,
 ol {
-  margin-bottom: 32px;
+  padding: 0 0 0 16px;
+  margin-bottom: 16px;
 }
 
 ul {
   list-style-type: none;
-  padding: 0 0 0 16px;
+}
+
+ol {
+  counter-reset: item;
+}
+
+ol > li {
+  list-style-type: none;
+  counter-increment: item;
+}
+
+ol > li:before,
+ul > li::before {
+  display: inline-block;
+  width: 1em;
+  padding-right: 0.5em;
+  font-weight: bold;
+  text-align: right;
+}
+
+ol > li:before {
+  content: counter(item) ".";
 }
 
 ul > li::before {
   content: "- ";
-  color: var(--color-primary);
 }
 
-p + ul {
+p + ul,
+p + ol {
   margin-top: -32px;
 }
 
@@ -78,6 +116,12 @@ blockquote > p {
   margin: 0;
 }
 
+p > code {
+  background-color: var(--color-bg-emph);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
 img {
   display: block;
   margin: 0 auto;
@@ -87,10 +131,11 @@ img {
 
 li {
   list-style-position: inside;
+  padding-bottom: 16px;
 }
 
 h1 {
-  max-width: 500px;
+  max-width: 600px;
   font-family: "Inter", sans-serif;
   text-align: center;
   margin: 1rem auto;
@@ -136,6 +181,48 @@ header > a:visited {
   color: var(--color-text);
   font-size: 32px;
   text-decoration: none;
+}
+
+header > div {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+header svg path {
+  fill: var(--color-text);
+}
+
+#mode-toggle {
+  cursor: pointer;
+  display: flex;
+  outline: none;
+  background-color: var(--color-bg-emph);
+  border: 2px solid var(--color-text);
+  border-radius: 100px;
+  gap: 8px;
+  padding: 4px 6px;
+  position: relative;
+}
+
+#mode-toggle > img {
+  max-width: 16px;
+  max-height: 16px;
+}
+
+#mode-toggle-dot {
+  transition: transform 150ms cubic-bezier(0.33, 1, 0.68, 1);
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 26px;
+  height: 26px;
+  background-color: var(--color-text);
+  border-radius: 100px;
+}
+
+html.dark-mode #mode-toggle-dot {
+  transform: translateX(28px);
 }
 
 footer {

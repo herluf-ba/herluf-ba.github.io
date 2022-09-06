@@ -988,7 +988,7 @@ fn update_in_game_ui(
 
 ////////// RENET NETWORKING //////////
 fn new_renet_client(username: &String) -> anyhow::Result<RenetClient> {
-    let server_addr = format!("{}:{}", env!("HOST"), env!("PORT")).parse()?;
+    let server_addr = "127.0.0.1:5000".parse()?;
     let socket = UdpSocket::bind("127.0.0.1:0")?;
     let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
     let client_id = current_time.as_millis() as u64;

@@ -74,7 +74,7 @@
     <main>
       <h1>Making a turn based multiplayer game in Rust - Writing a client using Bevy (part 3/3)</h1>
       <blockquote>
-<p>This is part 3/3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. In the <a href="https://herluf-ba/herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-01-whats-a-turn-based-game-anyway">first post</a> we established what a turn based game is and introduced the reducer pattern. In the <a href="https://herluf-ba/herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server.html">second post</a> we broke ground on TicTacTussle by writing a game server using the <a href="https://crates.io/crates/renet">renet</a> crate. </p>
+<p>This is part 3/3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. In the <a href="https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-01-whats-a-turn-based-game-anyway">first post</a> we established what a turn based game is and introduced the reducer pattern. In the <a href="https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server.html">second post</a> we broke ground on TicTacTussle by writing a game server using the <a href="https://crates.io/crates/renet">renet</a> crate. </p>
 </blockquote>
 <p>Welcome back! 👋 In this post we will write a client application for TicTacTussle using <a href="https://bevyengine.org/">bevy</a>. I&#39;ll be focusing on how to marry bevy with our networking strategy, so I won&#39;t be going into detail about how bevy works. Check out <a href="https://bevyengine.org/learn/book/introduction">the getting started guide</a> and also <a href="https://bevy-cheatbook.github.io/">the bevy cheatbook</a> for that 👍 As with last time, let&#39;s just get started right away!</p>
 <h2 id="connecting-our-bevy-app-to-our-game-server">Connecting our bevy app to our game server</h2>
@@ -1039,7 +1039,7 @@ fn update_in_game_ui(
 
 ////////// RENET NETWORKING //////////
 fn new_renet_client(username: &amp;String) -&gt; anyhow::Result&lt;RenetClient&gt; {
-    let server_addr = format!(&quot;{}:{}&quot;, env!(&quot;HOST&quot;), env!(&quot;PORT&quot;)).parse()?;
+    let server_addr = &quot;127.0.0.1:5000&quot;.parse()?;
     let socket = UdpSocket::bind(&quot;127.0.0.1:0&quot;)?;
     let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
     let client_id = current_time.as_millis() as u64;

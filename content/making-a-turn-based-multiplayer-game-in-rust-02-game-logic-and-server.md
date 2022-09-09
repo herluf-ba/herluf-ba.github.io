@@ -8,7 +8,7 @@ tags:
   - tutorial
 ---
 
-> This is part 2 of 3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. In this post we will use the reducer pattern that was introduced in the [previous post](https://herluf-ba/herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-01-whats-a-turn-based-game-anyway), to write a server for our game. In the [third and final post](https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-03-writing-a-client-using-bevy) we will write a client for the game using the awesome Bevy game engine.
+> This is part 2 of 3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. In this post we will use the reducer pattern that was introduced in the [previous post](https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-01-whats-a-turn-based-game-anyway), to write a server for our game. In the [third and final post](https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-03-writing-a-client-using-bevy) we will write a client for the game using the awesome Bevy game engine.
 
 Welcome back! 👋 In this post we will use the reducer pattern to write our game server. Let's just get started right away!
 

@@ -9,7 +9,7 @@ tags:
   - bevy
 ---
 
-> This is part 3/3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. In the [first post](https://herluf-ba/herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-01-whats-a-turn-based-game-anyway) we established what a turn based game is and introduced the reducer pattern. In the [second post](https://herluf-ba/herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server.html) we broke ground on TicTacTussle by writing a game server using the [renet](https://crates.io/crates/renet) crate. 
+> This is part 3/3 in a tutorial series about making a turn-based online multiplayer game in Rust. In this series we will be building a small game called TicTacTussle. In the [first post](https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-01-whats-a-turn-based-game-anyway) we established what a turn based game is and introduced the reducer pattern. In the [second post](https://herluf-ba.github.io/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server.html) we broke ground on TicTacTussle by writing a game server using the [renet](https://crates.io/crates/renet) crate. 
 
 Welcome back! 👋 In this post we will write a client application for TicTacTussle using [bevy](https://bevyengine.org/). I'll be focusing on how to marry bevy with our networking strategy, so I won't be going into detail about how bevy works. Check out [the getting started guide](https://bevyengine.org/learn/book/introduction) and also [the bevy cheatbook](https://bevy-cheatbook.github.io/) for that 👍 As with last time, let's just get started right away!
 

@@ -218,7 +218,7 @@ impl GameState {
     pub fn dispatch(&mut self, event: &GameEvent) -> Result<(), ()> {
         // It's very common to have a "dispatching" function 
         // like this to do things like validation and logging
-        if !self.validate(&event) {
+        if !self.validate(event) {
             return Err(());
         }
 

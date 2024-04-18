@@ -1,4 +1,5 @@
 @font-face {
+  font-display: swap;
   font-family: "JetBrains Mono Nerd Font";
   src: local(Fira Code Bold Nerd Font Complete Mono),
     url("./JetBrainsMonoNerdFont-Regular.ttf") format("truetype");
@@ -8,6 +9,7 @@
 }
 
 @font-face {
+  font-display: swap;
   font-family: "JetBrains Mono Nerd Font";
   src: local(JetBrainsMonoNerdFont-Regular),
     url("./JetBrainsMonoNerdFont-Regular.ttf") format("truetype");

@@ -4,20 +4,23 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <link rel="stylesheet" href="./assets/prism.css" />
+    <link rel="stylesheet" href="./assets/asciinema-player.css" />
 
     
-<title>Posts about gamedev</title>
-<meta name="title" content="Posts about gamedev">
-<meta name="description" content="Everything I have writting abount gamedev">
+<title>A neat way to switch git branches</title>
+<meta name="title" content="A neat way to switch git branches">
+<meta name="description" content="Fuzzy-find git branches using fzf.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="herluf-ba.github.io/tag/gamedev">
-<meta property="og:title" content="Posts about gamedev">
-<meta property="og:description" content="Everything I have writting abount gamedev">
+<meta property="og:url" content="herluf-ba.github.io/git-branch-search.html">
+<meta property="og:title" content="A neat way to switch git branches">
+<meta property="og:description" content="Fuzzy-find git branches using fzf.">
 <meta property="og:image" content="/images/herluf.webp">
 <meta property="twitter:card" content="description_large_image">
-<meta property="twitter:url" content="herluf-ba.github.io/tag/gamedev">
-<meta property="twitter:title" content="Posts about gamedev">
-<meta property="twitter:description" content="Everything I have writting abount gamedev">
+<meta property="twitter:url" content="herluf-ba.github.io/git-branch-search.html">
+<meta property="twitter:title" content="A neat way to switch git branches">
+<meta property="twitter:description" content="Fuzzy-find git branches using fzf.">
 <meta property="twitter:image" content="/images/herluf.webp">
 
   </head>
@@ -63,37 +66,43 @@
     </header>
 
     <main>
-      <p>Heres all I got on <a class="tag" href="/tag/gamedev.html">gamedev</a>:</p>
-      
-  <nav>
-    
-<section class="card">
-  <span class="date">9/3/2022</span>
-  <a href="/making-a-turn-based-multiplayer-game-in-rust-03-writing-a-client-using-bevy.html"><h2>Making a turn based multiplayer game in Rust - Writing a client using Bevy (part 3/3)</h2></a>
-  <a class="tag" href="/tag/rust.html">rust</a>
-<a class="tag" href="/tag/gamedev.html">gamedev</a>
-<a class="tag" href="/tag/tutorial.html">tutorial</a>
-<a class="tag" href="/tag/bevy.html">bevy</a>
-</section>
+      <h1>A neat way to switch git branches</h1>
+      <p>When I work on repositories with many git branches I often forget the name of the branch I want to work on.
+So I made a <code>gbs</code> (git-branch-search) command in my zsh config!</p>
 
-<section class="card">
-  <span class="date">9/3/2022</span>
-  <a href="/making-a-turn-based-multiplayer-game-in-rust-02-game-logic-and-server.html"><h2>Making a turn-based multiplayer game in Rust - Game logic and server (part 2/3)</h2></a>
-  <a class="tag" href="/tag/rust.html">rust</a>
-<a class="tag" href="/tag/gamedev.html">gamedev</a>
-<a class="tag" href="/tag/tutorial.html">tutorial</a>
-</section>
+<pre><code class="lang-bash"># Fuzzy-find git branches and checkout afterwards.
+gbs() {
+  # List all branches in current repository.
+  git branch -a |
+  # Fuzzy find them using fzf. Place the search-bar at the bottom and add a nice header.
+  # Render a preview of &#39;git log&#39;  for each branch with bat.
+  fzf --layout reverse-list --header=&quot;Select branch&quot; \
+      --preview &quot;echo {} | sed &#39;s/ //g&#39; | xargs git log | bat --color=always --theme=gruvbox-dark -p&quot; |
+  # Finally checkout to the selected branch.
+  xargs git checkout
+}
+</code></pre>
+<p>Here it is in action</p>
 
-<section class="card">
-  <span class="date">9/3/2022</span>
-  <a href="/making-a-turn-based-multiplayer-game-in-rust-01-whats-a-turn-based-game-anyway.html"><h2>Making a turn-based multiplayer game in Rust - What's a turn-based game anyway? (part 1/3)</h2></a>
-  <a class="tag" href="/tag/rust.html">rust</a>
-<a class="tag" href="/tag/gamedev.html">gamedev</a>
-<a class="tag" href="/tag/tutorial.html">tutorial</a>
-</section>
-  </nav>
+<pre><code class="lang-asciinema">git-branch-search.cast
+</code></pre>
+
     </main>
 
-    <script src="../assets/toggle-mode.js"></script>
+    <script src="./assets/prism.js"></script>
+    <script src="./assets/asciinema-player.min.js"></script>
+    <script src="./assets/toggle-mode.js"></script>
+
+    <script>
+      // Get all asciinema code elements and turn them into asciinema players.
+      const players = document.getElementsByClassName("lang-asciinema");
+      for (const player of players) {
+        const castFile = player.innerHTML.trim();
+        // Asciinema doesn't work with a code tag, so replace it with a div instead.
+        const divPlayer = document.createElement("div");
+        player.parentNode.replaceChild(divPlayer, player);
+        AsciinemaPlayer.create("./casts/" + castFile, divPlayer);
+      }
+    </script>
   </body>
 </html>

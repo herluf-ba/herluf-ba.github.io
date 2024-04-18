@@ -1,3 +1,19 @@
+@font-face {
+  font-family: "JetBrains Mono Nerd Font";
+  src: local(Fira Code Bold Nerd Font Complete Mono),
+    url("/docs/assets/JetBrainsMonoNerdFont-Regular.ttf") format("truetype");
+  font-stretch: normal;
+  font-style: normal;
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "JetBrains Mono Nerd Font";
+  src: local(JetBrainsMonoNerdFont-Regular),
+    url("/docs/assets/JetBrainsMonoNerdFont-Regular.ttf") format("truetype");
+  font-stretch: normal;
+}
+
 :root {
   --color-text: #252525;
   --color-text-fade: #cecece;
@@ -21,7 +37,8 @@ html.dark-mode {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Inconsolata", monospace;
+  font-family: "JetBrains Mono Nerd Font", monospace;
+  font-variant-ligatures: normal;
   color: var(--color-text);
 }
 
@@ -38,8 +55,8 @@ main {
 
 p,
 li {
-  font-family: Inconsolata, monospace;
-  font-size: 18px;
+  font-family: "JetBrains Mono Nerd Font", monospace;
+  font-size: 16px;
   letter-spacing: 0.02em;
   line-height: 1.6em;
 }
@@ -107,6 +124,10 @@ img {
   border-radius: 8px;
 }
 
+code {
+  font-family: "JetBrains Mono Nerd Font", monospace;
+}
+
 blockquote {
   background-color: var(--color-bg-emph);
   padding: 1rem;
@@ -135,8 +156,6 @@ li {
 }
 
 h1 {
-  max-width: 600px;
-  font-family: "Inter", sans-serif;
   text-align: center;
   margin: 1rem auto;
 }
@@ -147,7 +166,6 @@ h4,
 h5,
 h6 {
   margin-bottom: 1rem;
-  font-family: "Inter", sans-serif;
 }
 
 h2::before,
@@ -260,7 +278,6 @@ footer {
 }
 
 .card h2 {
-  font-family: "Inter", sans-serif;
   color: var(--color-text);
   width: 100%;
   margin: 0;

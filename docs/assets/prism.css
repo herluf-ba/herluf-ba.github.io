@@ -11,14 +11,13 @@
 code[class*="language-"],
 pre[class*="language-"] {
   color: #ebdbb2; /* fg1 / fg */
-  font-family: "Inconsolata", monospace;
   direction: ltr;
   text-align: left;
   white-space: pre;
   word-spacing: normal;
   word-break: normal;
   line-height: 1.5;
-  font-size: 18px;
+  font-size: 16px;
 
   -moz-tab-size: 4;
   -o-tab-size: 4;

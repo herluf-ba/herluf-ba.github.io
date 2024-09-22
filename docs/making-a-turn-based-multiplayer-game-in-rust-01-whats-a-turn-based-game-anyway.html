@@ -149,10 +149,10 @@ type PlayerId = u64;
 
 #[derive(Default)]
 pub struct GameState {
-    // Storing players in a map makes it easy too look them up by id. 
+    // Storing players in a map makes it easy to look them up by id.
     // For now we just store the player name.
     pub players: HashMap&lt;PlayerId, String&gt;,
-    // This is all the events that have been added to this state 
+    // This is all the events that have been added to this state
     // (What we have been calling the &quot;sequence of events&quot;)
     // Useful for undo/redo, but also for debugging!
     history: Vec&lt;GameEvent&gt;,
